@@ -15,4 +15,4 @@
 
 ## Implemented features
 
-- #1
+- [#1](https://github.com/AzisabaNetwork/api/issues/1)
