@@ -6,12 +6,13 @@
 
 ```json
 {
-    "routes": {
-        "GET": [
-            "/",
-            "/players/{uuid}"
-        ]
-    }
+  "routes": {
+    "GET": [
+      "/",
+      "/counts",
+      "/players/{uuid}"
+    ]
+  }
 }
 ```
 
