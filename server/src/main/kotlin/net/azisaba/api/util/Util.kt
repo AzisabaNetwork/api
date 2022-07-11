@@ -12,4 +12,17 @@ object Util {
             value
         }
     }
+
+    fun <R> memoizeSupplier(expireAfter: Long = 0, fn: () -> R): () -> R {
+        var cache: Pair<R, Long>? = null
+
+        return {
+            val now = System.currentTimeMillis()
+            val (value, lastUsed) = cache ?: Pair(fn(), now)
+            if (lastUsed == now || (expireAfter > 0 && now - lastUsed > expireAfter)) {
+                cache = Pair(fn(), now)
+            }
+            value
+        }
+    }
 }

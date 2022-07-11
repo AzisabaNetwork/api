@@ -7,10 +7,12 @@ import com.zaxxer.hikari.HikariDataSource
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import org.mariadb.jdbc.Driver
+import redis.clients.jedis.JedisPool
+import redis.clients.jedis.JedisPoolConfig
 import java.io.File
 
 @Serializable
-data class ServerConfig(val database: DatabaseConfig = DatabaseConfig()) {
+data class ServerConfig(val database: DatabaseConfig = DatabaseConfig(), val redis: RedisConfig = RedisConfig()) {
     companion object {
         val instance: ServerConfig
 
@@ -22,6 +24,10 @@ data class ServerConfig(val database: DatabaseConfig = DatabaseConfig()) {
                 configFile.writeText(Yaml.default.encodeToString(serializer(), ServerConfig()) + "\n")
             }
             instance = Yaml.default.decodeFromStream(serializer(), configFile.inputStream())
+            if (java.lang.Boolean.getBoolean("net.azisaba.api.saveConfig")) {
+                println("Saving config to $configFile (absolute path: ${configFile.absolutePath})")
+                configFile.writeText(Yaml.default.encodeToString(serializer(), instance) + "\n")
+            }
 
             Driver() // register driver here, just in case it's not registered yet.
         }
@@ -95,3 +101,28 @@ data class DatabaseNames(
     @YamlComment("Database of MPDB. Requires the SELECT privilege on mpdb_economy table.")
     val lifeMpdb: String = "life_mpdb",
 )
+
+@SerialName("redis")
+@Serializable
+data class RedisConfig(
+    @YamlComment("Redis hostname.")
+    val host: String = "localhost",
+    @YamlComment("Port of Redis server. Default is 6379, change if you want to use a different port.")
+    val port: Int = 6379,
+    @YamlComment("Username for Redis.")
+    val username: String? = null,
+    @YamlComment("Password for Redis, if the server is password-protected.")
+    val password: String? = null,
+) {
+    fun createPool(): JedisPool {
+        return if (username != null && password != null) {
+            JedisPool(host, port, username, password)
+        } else if (password != null) {
+            JedisPool(JedisPoolConfig(), host, port, 3000, password)
+        } else if (username != null) {
+            throw IllegalArgumentException("Password cannot be null if the username is provided")
+        } else {
+            JedisPool(JedisPoolConfig(), host, port)
+        }
+    }
+}

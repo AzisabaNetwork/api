@@ -21,7 +21,7 @@ fun main() {
             allowHeader(HttpHeaders.ContentType)
         }
 
-        configureDatabase()
+        DatabaseManager // Make connections to database
         configureRouting()
         configureSecurity()
         configureSerialization()

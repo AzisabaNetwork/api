@@ -4,7 +4,9 @@ import io.ktor.server.application.*
 import io.ktor.server.auth.*
 import io.ktor.server.resources.*
 import io.ktor.server.routing.*
+import net.azisaba.api.resources.Counts
 import net.azisaba.api.resources.Players
+import net.azisaba.api.resources.RequestHandler
 import net.azisaba.api.resources.handle
 import net.azisaba.api.resources.respondJson
 
@@ -19,11 +21,13 @@ fun Application.configureRouting() {
         }
 
         authenticate("api-key") {
-            // /players/{uuid}
-            get<Players.Id> { this.handle(it) }
+            get<Counts>() // /counts
+            get<Players.Id>() // /players/{uuid}
         }
     }
 }
+
+inline fun <reified T : RequestHandler> Route.get() = this.get<T> { this.handle(it) }
 
 fun Route.getAllRoutes(): List<Route> {
     val routes = mutableListOf(this)

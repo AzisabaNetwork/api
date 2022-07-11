@@ -32,7 +32,3 @@ object DatabaseManager {
         transaction(lifeMpdb) { addLogger(Slf4jSqlDebugLogger) }
     }
 }
-
-internal fun configureDatabase() {
-    DatabaseManager
-}

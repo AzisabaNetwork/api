@@ -1,6 +1,8 @@
 # API (Ktor implementation)
 
-## Routes
+## Server
+
+### Routes
 
 ```json
 {
@@ -13,6 +15,8 @@
 }
 ```
 
-## Implemented features
+### Implemented features
 
+- Add `?pretty` at the end of the URL to get pretty JSON instead of minified JSON.
 - [#1](https://github.com/AzisabaNetwork/api/issues/1)
+- [#2](https://github.com/AzisabaNetwork/api/issues/2)
