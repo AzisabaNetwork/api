@@ -8,7 +8,7 @@ plugins {
 }
 
 application {
-    mainClass.set("net.azisaba.api.ApplicationKt")
+    mainClass.set("net.azisaba.api.server.ApplicationKt")
 
     val isDevelopment: Boolean = project.ext.has("development")
     applicationDefaultJvmArgs = listOf("-Dio.ktor.development=$isDevelopment")

@@ -8,7 +8,7 @@ plugins {
     `java-library`
 }
 
-group = "net.azisaba"
+group = "net.azisaba.api"
 version = "0.0.1"
 
 java.toolchain.languageVersion.set(JavaLanguageVersion.of(17))

@@ -1,0 +1,11 @@
+{
+  "_": "kapt refused to work and I had to do this.",
+  "id": "azisaba-api",
+  "name": "Azisaba API",
+  "description": "Provides a command to generate API keys",
+  "version": "dev",
+  "url": "https://github.com/AzisabaNetwork/api",
+  "authors": ["Azisaba Network"],
+  "dependencies": [],
+  "main": "net.azisaba.api.velocity.VelocityPlugin"
+}
