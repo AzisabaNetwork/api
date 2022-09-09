@@ -71,12 +71,12 @@ object SpicyAzisaBan {
         var extra by PunishmentHistoryTable.extra
 
         fun toMap(): Map<String, Any?> = transaction(DatabaseManager.spicyAzisaBan) {
-            val unpunish = Unpunish.find(UnpunishTable.punishId eq this@PunishmentHistory.id.value).firstOrNull()
-            val inTable = Punishments.findById(this@PunishmentHistory.id)
+            val unpunish = Unpunish.findCachedByPunishId(this@PunishmentHistory.id.value).firstOrNull()
+            val inTable = Punishments.findCachedById(this@PunishmentHistory.id.value)
             val expired = end > 0L && end < System.currentTimeMillis()
             val active = unpunish == null && inTable != null && !expired
             val actorName = Players.getUsernameById(UUID.fromString(operator)) ?: "CONSOLE"
-            val proofs = Proofs.find(ProofsTable.punishId eq this@PunishmentHistory.id.value).map { it.toMap() }
+            val proofs = Proofs.getByPunishId(this@PunishmentHistory.id.value).map { it.toMap() }
             return@transaction mapOf(
                 "id" to this@PunishmentHistory.id.value,
                 "type" to type,
@@ -115,7 +115,13 @@ object SpicyAzisaBan {
     }
 
     class Punishments(id: EntityID<Long>) : LongEntity(id) {
-        companion object : LongEntityClass<Punishments>(PunishmentsTable)
+        companion object : LongEntityClass<Punishments>(PunishmentsTable) {
+            val findCachedById = Util.memoize(1000 * 60) { id: Long ->
+                transaction(DatabaseManager.spicyAzisaBan) {
+                    Punishments.findById(id)
+                }
+            }
+        }
 
         var name by PunishmentsTable.name
         var target by PunishmentsTable.target
@@ -136,7 +142,13 @@ object SpicyAzisaBan {
     }
 
     class Unpunish(id: EntityID<Long>) : LongEntity(id) {
-        companion object : LongEntityClass<Unpunish>(UnpunishTable)
+        companion object : LongEntityClass<Unpunish>(UnpunishTable) {
+            val findCachedByPunishId = Util.memoize(1000 * 60 * 60) { id: Long -> // 1 hour, unpunish record is unlikely to change
+                transaction(DatabaseManager.spicyAzisaBan) {
+                    Unpunish.find(UnpunishTable.punishId eq id).toList()
+                }
+            }
+        }
 
         var punishId by UnpunishTable.punishId
         var reason by UnpunishTable.reason
@@ -164,7 +176,13 @@ object SpicyAzisaBan {
     }
 
     class Proofs(id: EntityID<Long>) : LongEntity(id) {
-        companion object : LongEntityClass<Proofs>(ProofsTable)
+        companion object : LongEntityClass<Proofs>(ProofsTable) {
+            val getByPunishId = Util.memoize(1000 * 60) { punishId: Long ->
+                transaction(DatabaseManager.spicyAzisaBan) {
+                    Proofs.find(ProofsTable.punishId eq punishId).toList()
+                }
+            }
+        }
 
         var punishId by ProofsTable.punishId
         var text by ProofsTable.text

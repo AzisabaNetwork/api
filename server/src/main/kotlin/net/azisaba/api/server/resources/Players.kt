@@ -27,25 +27,11 @@ class Players {
         val uuid: UUID,
     ): RequestHandler() {
         override suspend fun PipelineContext<Unit, ApplicationCall>.handleRequest() {
-            if (uuid.version() == 3) {
-                call.respondJson(
-                    mapOf(
-                        "error" to "cannot get player from offline (version 3) UUID",
-                    ),
-                    status = HttpStatusCode.BadRequest,
-                )
-                return
-            }
             val username = transaction(DatabaseManager.spicyAzisaBan) { SpicyAzisaBan.Players.getUsernameById(uuid) }
-            if (username == null) {
-                call.respondJson(
-                    mapOf(
-                        "error" to "player not found",
-                    ),
-                    status = HttpStatusCode.NotFound,
+                ?: return call.respondJson(
+                    mapOf("error" to "player not found"),
+                    status = HttpStatusCode.NotFound
                 )
-                return
-            }
             call.respondJson(
                 mapOf(
                     "uuid" to (uuid.toString() as Any).toString(),
@@ -150,6 +136,18 @@ class Players {
                 -> return null
             }
             return group
+        }
+
+        @Serializable
+        @Resource("punishments")
+        data class Punishments(val parent: Id): RequestHandler() {
+            override suspend fun PipelineContext<Unit, ApplicationCall>.handleRequest() {
+                val map = transaction(DatabaseManager.spicyAzisaBan) {
+                    SpicyAzisaBan.PunishmentHistory.find(SpicyAzisaBan.PunishmentHistoryTable.target eq parent.uuid.toString())
+                        .map { it.toMap() }
+                }
+                call.respondJson(map)
+            }
         }
     }
 }

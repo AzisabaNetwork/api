@@ -13,6 +13,7 @@ Rate limit is 120 requests per minute.
       "/",
       "/counts",
       "/players/{uuid}",
+      "/players/{uuid}/punishments",
       "/punishments/{id}"
     ]
   }
