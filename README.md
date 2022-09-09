@@ -12,7 +12,8 @@ Rate limit is 120 requests per minute.
     "GET": [
       "/",
       "/counts",
-      "/players/{uuid}"
+      "/players/{uuid}",
+      "/punishments/{id}"
     ]
   }
 }
@@ -23,6 +24,7 @@ Rate limit is 120 requests per minute.
 - Add `?pretty` at the end of the URL to get pretty JSON instead of minified JSON.
 - [#1](https://github.com/AzisabaNetwork/api/issues/1)
 - [#2](https://github.com/AzisabaNetwork/api/issues/2)
+- [#3](https://github.com/AzisabaNetwork/api/issues/3)
 
 ### Authenticating
 
