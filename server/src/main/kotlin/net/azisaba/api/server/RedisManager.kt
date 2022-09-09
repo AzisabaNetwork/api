@@ -1,9 +1,9 @@
 package net.azisaba.api.server
 
 import kotlinx.serialization.Serializable
-import net.azisaba.api.server.serializers.UUIDSerializer
-import net.azisaba.api.server.util.JsonUtil
+import net.azisaba.api.serializers.UUIDSerializer
 import net.azisaba.api.server.util.Util
+import net.azisaba.api.util.JSON
 import org.slf4j.LoggerFactory
 import redis.clients.jedis.JedisPool
 import java.util.UUID
@@ -29,7 +29,7 @@ object RedisManager {
                     if (data == null) {
                         null
                     } else {
-                        JsonUtil.json.decodeFromString(PlayerInfo.serializer(), data)
+                        JSON.decodeFromString(PlayerInfo.serializer(), data)
                     }
                 } catch (e: Exception) {
                     log.error("Failed to deserialize PlayerInfo", e)

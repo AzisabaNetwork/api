@@ -1,6 +1,6 @@
 package net.azisaba.api.server
 
-import net.azisaba.api.schemas.AzisabaAPI
+import net.azisaba.api.server.schemas.AzisabaAPI
 import org.jetbrains.exposed.sql.Database
 import org.jetbrains.exposed.sql.SchemaUtils
 import org.jetbrains.exposed.sql.Slf4jSqlDebugLogger

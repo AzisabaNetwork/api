@@ -1,4 +1,4 @@
-package net.azisaba.api.server.serializers
+package net.azisaba.api.serializers
 
 import kotlinx.serialization.ContextualSerializer
 import kotlinx.serialization.ExperimentalSerializationApi

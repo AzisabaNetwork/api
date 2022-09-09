@@ -4,15 +4,13 @@ import com.mojang.brigadier.arguments.BoolArgumentType
 import com.mojang.brigadier.builder.LiteralArgumentBuilder
 import com.velocitypowered.api.command.CommandSource
 import com.velocitypowered.api.proxy.Player
-import net.azisaba.api.schemas.AzisabaAPI
 import net.azisaba.api.velocity.DatabaseManager
+import net.azisaba.api.velocity.schemes.APIKey
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.event.ClickEvent
 import net.kyori.adventure.text.event.HoverEvent
 import net.kyori.adventure.text.format.NamedTextColor
 import net.kyori.adventure.text.format.TextDecoration
-import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
-import org.jetbrains.exposed.sql.transactions.transaction
 import java.util.UUID
 
 object APIKeyCommand : AbstractCommand() {
@@ -25,14 +23,13 @@ object APIKeyCommand : AbstractCommand() {
             .executes { execute(it.source as Player, false) }
 
     private fun execute(player: Player, force: Boolean): Int {
-        val existingAPIKey = transaction(DatabaseManager.azisabaApi) {
-            AzisabaAPI.APIKey.find(AzisabaAPI.APIKeyTable.player eq player.uniqueId.toString()).firstOrNull()
-        }
+        val existingAPIKey = APIKey.select("SELECT * FROM `api_keys` WHERE `player` = ? LIMIT 1", player.uniqueId.toString()).firstOrNull()
 
         if (existingAPIKey != null) {
             if (force) {
-                transaction(DatabaseManager.azisabaApi) {
-                    existingAPIKey.delete()
+                DatabaseManager.execute("DELETE FROM `api_keys` WHERE `player` = ?") {
+                    it.setString(1, player.uniqueId.toString())
+                    it.executeUpdate()
                 }
             } else {
                 player.sendMessage(
@@ -44,13 +41,8 @@ object APIKeyCommand : AbstractCommand() {
             }
         }
 
-        val newAPIKey = transaction(DatabaseManager.azisabaApi) {
-            AzisabaAPI.APIKey.new {
-                this.player = player.uniqueId.toString()
-                this.key = UUID.randomUUID().toString() // UUID.randomUUID() uses SecureRandom, so it is ok
-                this.createdAt = System.currentTimeMillis()
-            }
-        }
+        val newAPIKey = APIKey(0, UUID.randomUUID().toString(), player.uniqueId, System.currentTimeMillis(), 0)
+        APIKey.insertB("api_keys", newAPIKey) { put("id", null); put("0", null) }
 
         // we can't just send the key as chat message because it is logged in client's latest.log
         // however, `click_event`s are not logged (at least on vanilla), so we can use that to send the key.

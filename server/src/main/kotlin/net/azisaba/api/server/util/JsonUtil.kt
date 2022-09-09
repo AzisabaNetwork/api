@@ -1,37 +1,25 @@
 package net.azisaba.api.server.util
 
 import io.ktor.server.application.*
-import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonNull
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
-import kotlinx.serialization.modules.SerializersModule
-import net.azisaba.api.server.serializers.DynamicLookupSerializer
-import net.azisaba.api.server.serializers.UUIDSerializer
-import java.util.UUID
+import net.azisaba.api.util.JSON
 
 object JsonUtil {
-    @OptIn(ExperimentalSerializationApi::class)
-    val json = Json {
-        serializersModule = SerializersModule {
-            contextual(Any::class, DynamicLookupSerializer)
-            contextual(UUID::class, UUIDSerializer)
-        }
-    }
-
     val prettyJson = Json {
         prettyPrint = true
-        serializersModule = json.serializersModule
+        serializersModule = JSON.serializersModule
     }
 
     fun ApplicationCall.getJson() =
         if (request.queryParameters.contains("pretty")) {
             prettyJson
         } else {
-            json
+            JSON
         }
 }
 
@@ -57,3 +45,4 @@ fun Any?.toJsonElement(): JsonElement = when (this) {
     is Enum<*> -> JsonPrimitive(this.toString())
     else -> throw IllegalStateException("Can't serialize unknown type: $this (${this::class.java.typeName})")
 }
+

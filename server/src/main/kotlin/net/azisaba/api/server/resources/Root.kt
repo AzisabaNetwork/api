@@ -2,6 +2,7 @@ package net.azisaba.api.server.resources
 
 import io.ktor.resources.*
 import io.ktor.server.application.*
+import io.ktor.server.response.*
 import io.ktor.util.pipeline.*
 import kotlinx.serialization.Serializable
 import net.azisaba.api.server.PlayerInfo

@@ -10,7 +10,7 @@ import net.azisaba.api.server.schemas.LifeMpdb
 import net.azisaba.api.server.schemas.LifeStatz
 import net.azisaba.api.server.schemas.LuckPerms
 import net.azisaba.api.server.schemas.SpicyAzisaBan
-import net.azisaba.api.server.serializers.UUIDSerializer
+import net.azisaba.api.serializers.UUIDSerializer
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.transactions.transaction
 import java.util.UUID

@@ -1,4 +1,4 @@
-package net.azisaba.api.schemas
+package net.azisaba.api.server.schemas
 
 import org.jetbrains.exposed.dao.LongEntity
 import org.jetbrains.exposed.dao.LongEntityClass

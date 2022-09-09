@@ -2,6 +2,8 @@
 
 ## Server
 
+Rate limit is 120 requests per minute.
+
 ### Routes
 
 ```json

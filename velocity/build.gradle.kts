@@ -21,7 +21,7 @@ tasks {
         val prefix = "net.azisaba.api.velocity.lib"
         relocate("org.mariadb", "$prefix.org.mariadb")
         relocate("kotlinx", "$prefix.kotlinx")
-        //relocate("kotlin", "$prefix.kotlin")
+        relocate("kotlin", "$prefix.kotlin")
         //relocate("org.jetbrains.exposed", "$prefix.org.jetbrains.exposed")
         relocate("org.jetbrains.annotations", "$prefix.org.jetbrains.annotations")
         relocate("com.zaxxer", "$prefix.com.zaxxer")
