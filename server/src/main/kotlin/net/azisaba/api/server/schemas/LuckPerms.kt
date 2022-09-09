@@ -1,5 +1,6 @@
 package net.azisaba.api.server.schemas
 
+import net.azisaba.api.server.DatabaseManager
 import net.azisaba.api.server.ServerConfig
 import net.azisaba.api.server.util.Util
 import org.jetbrains.exposed.dao.Entity
@@ -10,6 +11,7 @@ import org.jetbrains.exposed.dao.id.EntityID
 import org.jetbrains.exposed.dao.id.IdTable
 import org.jetbrains.exposed.dao.id.IntIdTable
 import org.jetbrains.exposed.sql.and
+import org.jetbrains.exposed.sql.transactions.transaction
 import java.util.UUID
 
 object LuckPerms {
@@ -21,8 +23,10 @@ object LuckPerms {
 
     class Players(id: EntityID<String>) : Entity<String>(id) {
         companion object : EntityClass<String, Players>(PlayersTable) {
-            val getUsernameById: (id: UUID) -> String? = Util.memoize(1000 * 60 * 10) { id ->
-                Players.findById(id.toString())?.username
+            val getUsernameById: (id: UUID) -> String? = Util.memoize(1000 * 60 * 10) { id -> // 10 minutes
+                transaction(DatabaseManager.luckPerms) {
+                    Players.findById(id.toString())?.username
+                }
             }
         }
 
@@ -42,16 +46,25 @@ object LuckPerms {
 
     class UserPermissions(id: EntityID<Int>) : IntEntity(id) {
         companion object : IntEntityClass<UserPermissions>(UserPermissionsTable) {
-            val getGroupsForPlayer: (uuid: UUID) -> List<UserPermissions> = Util.memoize(1000 * 30) {
-                UserPermissions
-                    .find {
-                        (UserPermissionsTable.uuid eq it.toString()) and
-                                (UserPermissionsTable.permission like "group.%") and
-                                (UserPermissionsTable.value eq true)
-                    }
-                    .sortedByDescending { GroupPermissions.getGroupWeight(it.permission.removePrefix("group.")) }
-                    .toList()
+            val getGroupsForPlayer: (uuid: UUID) -> List<UserPermissions> = Util.memoize(1000 * 30) { // 30 seconds
+                transaction(DatabaseManager.luckPerms) {
+                    UserPermissions
+                        .find {
+                            (UserPermissionsTable.uuid eq it.toString()) and
+                                    (UserPermissionsTable.permission like "group.%") and
+                                    (UserPermissionsTable.value eq true)
+                        }
+                        .sortedByDescending { GroupPermissions.getGroupWeight(it.permission.removePrefix("group.")) }
+                        .toList()
+                }
             }
+
+            fun hasAnyGroup(uuid: UUID, vararg groups: String, server: String = "global"): Boolean =
+                getGroupsForPlayer(uuid).any {
+                    it.server == server &&
+                            it.world == "global" &&
+                            groups.contains(it.permission.removePrefix("group."))
+                }
         }
 
         val uuid by UserPermissionsTable.uuid
@@ -73,21 +86,23 @@ object LuckPerms {
         val contexts = varchar("contexts", 200)
     }
 
-    class GroupPermissions (id: EntityID<Int>) : IntEntity(id) {
+    class GroupPermissions(id: EntityID<Int>) : IntEntity(id) {
         companion object : IntEntityClass<GroupPermissions>(GroupPermissionsTable) {
-            val getGroupWeight: (name: String) -> Long = Util.memoize(1000 * 60 * 60 * 2) {
-                GroupPermissions
-                    .find {
-                        (GroupPermissionsTable.name eq it) and
-                                (GroupPermissionsTable.permission like "weight.%") and
-                                (GroupPermissionsTable.value eq true)
-                    }
-                    .limit(1)
-                    .firstOrNull()
-                    ?.permission
-                    ?.removePrefix("weight.")
-                    ?.toLong()
-                    ?: 0
+            val getGroupWeight: (name: String) -> Long = Util.memoize(1000 * 60 * 60 * 2) { // 2 hours
+                transaction(DatabaseManager.luckPerms) {
+                    GroupPermissions
+                        .find {
+                            (GroupPermissionsTable.name eq it) and
+                                    (GroupPermissionsTable.permission like "weight.%") and
+                                    (GroupPermissionsTable.value eq true)
+                        }
+                        .limit(1)
+                        .firstOrNull()
+                        ?.permission
+                        ?.removePrefix("weight.")
+                        ?.toLong()
+                        ?: 0
+                }
             }
         }
 

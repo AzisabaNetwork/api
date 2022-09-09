@@ -85,7 +85,14 @@ data class DatabaseConfig(
 data class DatabaseNames(
     @YamlComment("Stores API Keys. Requires the SELECT, CREATE, UPDATE, and ALTER privileges.")
     val azisabaApi: String = "azisaba_api",
-    @YamlComment("Database of SpicyAzisaBan. Requires the SELECT privilege on players table.")
+    @YamlComment(
+        "Database of SpicyAzisaBan. Requires the SELECT privilege on these tables:",
+        " - punishmentHistory",
+        " - punishments",
+        " - unpunish",
+        " - proofs",
+        " - players",
+    )
     val spicyAzisaBan: String = "spicyazisaban",
     @YamlComment(
         "Database of LuckPerms.",

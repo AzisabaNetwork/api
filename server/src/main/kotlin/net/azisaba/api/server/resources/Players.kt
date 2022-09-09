@@ -117,12 +117,11 @@ class Players {
             // exp, money, veteranpoint, title might be added in the future
         }
 
-        private fun getGroups(uuid: UUID, server: String) = transaction(DatabaseManager.luckPerms) {
+        private fun getGroups(uuid: UUID, server: String) =
             LuckPerms.UserPermissions.getGroupsForPlayer(uuid)
                 .filter { it.server == server && it.world == "global" }
                 .map { it.permission.removePrefix("group.") }
                 .mapNotNull { filterGroup(it) }
-        }
 
         private fun filterGroup(rawGroup: String): String? {
             val group = rawGroup

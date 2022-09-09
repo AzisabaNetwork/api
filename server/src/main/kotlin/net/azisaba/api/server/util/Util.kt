@@ -1,7 +1,7 @@
 package net.azisaba.api.server.util
 
 object Util {
-    fun <T, R> memoize(expireAfter: Long = 0, fn: (T) -> R): (T) -> R {
+    inline fun <T, R> memoize(expireAfter: Long = 0, crossinline fn: (T) -> R): (T) -> R {
         val cache = mutableMapOf<T, Pair<R, Long>>()
         return {
             val now = System.currentTimeMillis()

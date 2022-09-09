@@ -6,6 +6,7 @@ import io.ktor.server.resources.*
 import io.ktor.server.routing.*
 import net.azisaba.api.server.resources.Counts
 import net.azisaba.api.server.resources.Players
+import net.azisaba.api.server.resources.Punishments
 import net.azisaba.api.server.resources.RequestHandler
 import net.azisaba.api.server.resources.handle
 import net.azisaba.api.server.resources.respondJson
@@ -23,6 +24,10 @@ fun Application.configureRouting() {
         authenticate("api-key") {
             get<Counts>() // /counts
             get<Players.Id>() // /players/{uuid}
+        }
+
+        authenticate("punishments") {
+            get<Punishments.Id>() // /punishments/{id}
         }
     }
 }
