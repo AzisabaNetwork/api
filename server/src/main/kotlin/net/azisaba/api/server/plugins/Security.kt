@@ -29,8 +29,14 @@ fun Application.configureSecurity() {
         register(GroupAuthenticationProvider.create("punishments") {
             group("punish-manager")
             group("punish-expert")
+            group("switchalladmin")
             group("alladmin")
+            group("switchalladminmember")
+            group("alladminmember")
+            group("switchdeveloper")
             group("developer")
+            group("switchdevelopermember")
+            group("developermember")
         })
     }
 }
