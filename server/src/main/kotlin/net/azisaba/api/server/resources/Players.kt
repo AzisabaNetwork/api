@@ -26,13 +26,8 @@ class Players {
         @Serializable(with = UUIDSerializer::class)
         val uuid: UUID,
     ): RequestHandler() {
-        override suspend fun PipelineContext<Unit, ApplicationCall>.handleRequest() {
-            val username = transaction(DatabaseManager.spicyAzisaBan) { SpicyAzisaBan.Players.getUsernameById(uuid) }
-                ?: return call.respondJson(
-                    mapOf("error" to "player not found"),
-                    status = HttpStatusCode.NotFound
-                )
-            call.respondJson(
+        companion object {
+            fun toMap(uuid: UUID, username: String): Map<String, Any?> =
                 mapOf(
                     "uuid" to (uuid.toString() as Any).toString(),
                     "name" to username,
@@ -45,97 +40,105 @@ class Players {
                         "diverse" to getDiverse(uuid),
                     )
                 )
-            )
-        }
 
-        private fun getServerTemplate(uuid: UUID, server: String): Map<String, Any> {
-            val groups = getGroups(uuid, server)
-            return getServerTemplate(groups)
-        }
-
-        private fun getServerTemplate(groups: List<String>): Map<String, Any> {
-            return mapOf(
-                "admin" to groups.contains("admin"),
-                "moderator" to groups.contains("moderator"),
-                "builder" to groups.contains("builder"),
-            )
-        }
-
-        private fun getLife(uuid: UUID): Map<String, Any> {
-            val groups = getGroups(uuid, "life")
-            val rank = groups
-                .filter { it.startsWith("rank") }
-                .map { it.removePrefix("rank") }
-                .firstOrNull()
-                ?.toInt()
-                ?: 1
-            val eco = transaction(DatabaseManager.lifeMpdb) {
-                LifeMpdb.Economy.find(LifeMpdb.EconomyTable.playerUUID eq uuid.toString()).firstOrNull()
+            private fun getServerTemplate(uuid: UUID, server: String): Map<String, Any> {
+                val groups = getGroups(uuid, server)
+                return getServerTemplate(groups)
             }
-            return getServerTemplate(uuid, "life") + mapOf(
-                "rank" to rank,
-                "balance" to (eco?.money?.plus(eco.offlineMoney) ?: 0),
-                "raw_balance" to (eco?.money ?: 0),
-                "raw_offline_balance" to (eco?.offlineMoney ?: 0),
-                "total_play_time" to transaction(DatabaseManager.lifeStatz) { LifeStatz.StatzTimePlayed.getPlayTime(uuid) },
-            )
-        }
 
-        private fun getTSL(uuid: UUID): Map<String, Any> {
-            return getServerTemplate(uuid, "tsl") + mapOf(
-                "total_play_time" to transaction(DatabaseManager.lifeStatz) { LifeStatz.StatzTimePlayed.getPlayTime(uuid) },
-            )
-        }
-
-        private fun getLGW(uuid: UUID): Map<String, Any> {
-            val groups = getGroups(uuid, "lgw")
-            return getServerTemplate(groups) + mapOf(
-                "vip" to groups.contains("vip"),
-            )
-        }
-
-        private fun getDespawn(uuid: UUID): Map<String, Any> {
-            return getServerTemplate(uuid, "despawn")
-        }
-
-        private fun getDiverse(uuid: UUID): Map<String, Any> {
-            return getServerTemplate(uuid, "diverse")
-            // exp, money, veteranpoint, title might be added in the future
-        }
-
-        private fun getGroups(uuid: UUID, server: String) =
-            LuckPerms.UserPermissions.getGroupsForPlayer(uuid)
-                .filter { it.server == server && it.world == "global" }
-                .map { it.permission.removePrefix("group.") }
-                .mapNotNull { filterGroup(it) }
-
-        private fun filterGroup(rawGroup: String): String? {
-            val group = rawGroup
-                .removePrefix("switch") // /switch'd admin/moderator/builder groups
-                .removePrefix("change") // sara
-                .removePrefix("show") // sara
-
-            if (group.startsWith("hide")) {
-                return group.removePrefix("hide") + "yen"
+            private fun getServerTemplate(groups: List<String>): Map<String, Any> {
+                return mapOf(
+                    "admin" to groups.contains("admin"),
+                    "moderator" to groups.contains("moderator"),
+                    "builder" to groups.contains("builder"),
+                )
             }
-            if (group.startsWith("punish-") ||
-                group.startsWith("coretol_") ||
-                group.startsWith("kill") ||
-                group.startsWith("wave")
-            ) {
-                return null
+
+            private fun getLife(uuid: UUID): Map<String, Any> {
+                val groups = getGroups(uuid, "life")
+                val rank = groups
+                    .filter { it.startsWith("rank") }
+                    .map { it.removePrefix("rank") }
+                    .firstOrNull()
+                    ?.toInt()
+                    ?: 1
+                val eco = transaction(DatabaseManager.lifeMpdb) {
+                    LifeMpdb.Economy.find(LifeMpdb.EconomyTable.playerUUID eq uuid.toString()).firstOrNull()
+                }
+                return getServerTemplate(uuid, "life") + mapOf(
+                    "rank" to rank,
+                    "balance" to (eco?.money?.plus(eco.offlineMoney) ?: 0),
+                    "raw_balance" to (eco?.money ?: 0),
+                    "raw_offline_balance" to (eco?.offlineMoney ?: 0),
+                    "total_play_time" to transaction(DatabaseManager.lifeStatz) { LifeStatz.StatzTimePlayed.getPlayTime(uuid) },
+                )
             }
-            when (group) {
-                "developermember",
-                "alladminmember",
-                "adminmember",
-                "moderatormember",
-                "police",
-                "member",
-                "default",
-                -> return null
+
+            private fun getTSL(uuid: UUID): Map<String, Any> {
+                return getServerTemplate(uuid, "tsl") + mapOf(
+                    "total_play_time" to transaction(DatabaseManager.lifeStatz) { LifeStatz.StatzTimePlayed.getPlayTime(uuid) },
+                )
             }
-            return group
+
+            private fun getLGW(uuid: UUID): Map<String, Any> {
+                val groups = getGroups(uuid, "lgw")
+                return getServerTemplate(groups) + mapOf(
+                    "vip" to groups.contains("vip"),
+                )
+            }
+
+            private fun getDespawn(uuid: UUID): Map<String, Any> {
+                return getServerTemplate(uuid, "despawn")
+            }
+
+            private fun getDiverse(uuid: UUID): Map<String, Any> {
+                return getServerTemplate(uuid, "diverse")
+                // exp, money, veteranpoint, title might be added in the future
+            }
+
+            private fun getGroups(uuid: UUID, server: String) =
+                LuckPerms.UserPermissions.getGroupsForPlayer(uuid)
+                    .filter { it.server == server && it.world == "global" }
+                    .map { it.permission.removePrefix("group.") }
+                    .mapNotNull { filterGroup(it) }
+
+            private fun filterGroup(rawGroup: String): String? {
+                val group = rawGroup
+                    .removePrefix("switch") // /switch'd admin/moderator/builder groups
+                    .removePrefix("change") // sara
+                    .removePrefix("show") // sara
+
+                if (group.startsWith("hide")) {
+                    return group.removePrefix("hide") + "yen"
+                }
+                if (group.startsWith("punish-") ||
+                    group.startsWith("coretol_") ||
+                    group.startsWith("kill") ||
+                    group.startsWith("wave")
+                ) {
+                    return null
+                }
+                when (group) {
+                    "developermember",
+                    "alladminmember",
+                    "adminmember",
+                    "moderatormember",
+                    "police",
+                    "member",
+                    "default",
+                    -> return null
+                }
+                return group
+            }
+        }
+
+        override suspend fun PipelineContext<Unit, ApplicationCall>.handleRequest() {
+            val username = transaction(DatabaseManager.spicyAzisaBan) { SpicyAzisaBan.Players.getUsernameById(uuid) }
+                ?: return call.respondJson(
+                    mapOf("error" to "player not found"),
+                    status = HttpStatusCode.NotFound
+                )
+            call.respondJson(toMap(uuid, username))
         }
 
         @Serializable
@@ -148,6 +151,19 @@ class Players {
                 }
                 call.respondJson(map)
             }
+        }
+    }
+
+    @Serializable
+    @Resource("by-name/{name}")
+    data class ByName(val parent: Players, val name: String): RequestHandler() {
+        override suspend fun PipelineContext<Unit, ApplicationCall>.handleRequest() {
+            val id = SpicyAzisaBan.Players.getIdByUsername(name)
+                ?: return call.respondJson(
+                    mapOf("error" to "player not found"),
+                    status = HttpStatusCode.NotFound,
+                )
+            call.respondJson(Id.toMap(id, name))
         }
     }
 }

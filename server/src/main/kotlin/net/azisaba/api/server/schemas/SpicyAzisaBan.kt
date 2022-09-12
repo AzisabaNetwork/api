@@ -33,6 +33,12 @@ object SpicyAzisaBan {
                     Players.findById(id.toString())?.name
                 }
             }
+
+            val getIdByUsername: (username: String) -> UUID? = Util.memoize(1000 * 60 * 10) { username ->
+                transaction(DatabaseManager.spicyAzisaBan) {
+                    Players.find { PlayersTable.name eq username }.firstOrNull()?.id?.value?.let { UUID.fromString(it) }
+                }
+            }
         }
 
         var name by PlayersTable.name

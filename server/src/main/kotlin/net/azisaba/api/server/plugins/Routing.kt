@@ -24,6 +24,7 @@ fun Application.configureRouting() {
         authenticate("api-key") {
             get<Counts>() // /counts
             get<Players.Id>() // /players/{uuid}
+            get<Players.ByName>() // /players/by-name/{uuid}
         }
 
         authenticate("punishments") {
