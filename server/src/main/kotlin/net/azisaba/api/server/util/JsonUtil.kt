@@ -37,6 +37,7 @@ fun Map<*, *>.toJsonElement(): JsonElement = JsonObject(
 
 fun Any?.toJsonElement(): JsonElement = when (this) {
     null -> JsonNull
+    is JsonElement -> this
     is Map<*, *> -> toJsonElement()
     is Collection<*> -> toJsonElement()
     is Boolean -> JsonPrimitive(this)

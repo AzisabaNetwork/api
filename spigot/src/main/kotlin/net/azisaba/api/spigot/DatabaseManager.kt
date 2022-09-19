@@ -1,5 +1,5 @@
-package net.azisaba.api.velocity
-
+package net.azisaba.api.spigot
+/*
 import net.azisaba.api.sql.QueryExecutor
 import org.intellij.lang.annotations.Language
 import java.sql.PreparedStatement
@@ -18,3 +18,4 @@ object DatabaseManager : QueryExecutor {
             }
         }
 }
+*/

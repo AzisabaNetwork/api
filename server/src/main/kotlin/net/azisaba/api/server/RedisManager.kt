@@ -1,6 +1,7 @@
 package net.azisaba.api.server
 
 import kotlinx.serialization.Serializable
+import net.azisaba.api.data.AuctionInfo
 import net.azisaba.api.serializers.UUIDSerializer
 import net.azisaba.api.server.util.Util
 import net.azisaba.api.util.JSON
@@ -17,6 +18,10 @@ object RedisManager {
      * Similar to [fetchPlayers], but caches the result for 10 seconds.
      */
     val getPlayers: () -> List<PlayerInfo> = Util.memoizeSupplier(1000 * 10) { fetchPlayers() }
+
+    val getAuctions: () -> List<AuctionInfo> = Util.memoizeSupplier(1000 * 60) { fetchAuctions() }
+
+    val getAuction: (storeId: Long) -> AuctionInfo? = Util.memoize(1000 * 60) { id -> fetchAuction(id) }
 
     /**
      * Returns a list of all players. This method fetches the list from Redis and is not cached.
@@ -35,6 +40,41 @@ object RedisManager {
                     log.error("Failed to deserialize PlayerInfo", e)
                     null
                 }
+            }
+        }
+    }
+
+    private fun fetchAuctions(): List<AuctionInfo> {
+        val id = "azisaba-api:auction:*"
+        return pool.resource.use { jedis ->
+            jedis.mget(*jedis.keys(id).toTypedArray()).mapNotNull { data ->
+                try {
+                    if (data == null) {
+                        null
+                    } else {
+                        JSON.decodeFromString(AuctionInfo.serializer(), data)
+                    }
+                } catch (e: Exception) {
+                    log.error("Failed to deserialize AuctionInfo", e)
+                    null
+                }
+            }
+        }
+    }
+
+    private fun fetchAuction(id: Long): AuctionInfo? {
+        val key = "azisaba-api:auction:$id"
+        return pool.resource.use { jedis ->
+            val data = jedis.get(key)
+            try {
+                if (data == null) {
+                    null
+                } else {
+                    JSON.decodeFromString(AuctionInfo.serializer(), data)
+                }
+            } catch (e: Exception) {
+                log.error("Failed to deserialize AuctionInfo", e)
+                null
             }
         }
     }

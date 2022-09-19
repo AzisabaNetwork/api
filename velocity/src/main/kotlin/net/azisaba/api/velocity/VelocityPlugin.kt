@@ -6,6 +6,7 @@ import com.velocitypowered.api.event.proxy.ProxyInitializeEvent
 import com.velocitypowered.api.plugin.Plugin
 import com.velocitypowered.api.plugin.annotation.DataDirectory
 import com.velocitypowered.api.proxy.ProxyServer
+import net.azisaba.api.Logger.Companion.registerLogger
 import net.azisaba.api.velocity.commands.APIKeyCommand
 import org.slf4j.Logger
 import java.nio.file.Path
@@ -18,7 +19,8 @@ open class VelocityPlugin @Inject constructor(
     @DataDirectory val dataDirectory: Path,
 ) {
     init {
-        logger.info("Attempting to load configuration...")
+        logger.registerLogger()
+        logger.info("Loading config")
         PluginConfig.loadConfig(logger, dataDirectory)
         logger.info("Connecting to database")
         DatabaseManager

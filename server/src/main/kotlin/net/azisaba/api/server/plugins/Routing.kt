@@ -25,6 +25,8 @@ fun Application.configureRouting() {
             get<Counts>() // /counts
             get<Players.Id>() // /players/{uuid}
             get<Players.ByName>() // /players/by-name/{uuid}
+            get<net.azisaba.api.server.resources.servers.life.Auctions>()
+            get<net.azisaba.api.server.resources.servers.life.Auctions.Id>()
         }
 
         authenticate("punishments") {

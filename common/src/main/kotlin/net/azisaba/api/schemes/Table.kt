@@ -1,12 +1,12 @@
-package net.azisaba.api.velocity.schemes
+package net.azisaba.api.schemes
 
 import kotlinx.serialization.InternalSerializationApi
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.serializerOrNull
+import net.azisaba.api.sql.QueryExecutor
 import net.azisaba.api.util.JSON
-import net.azisaba.api.velocity.DatabaseManager
 import org.intellij.lang.annotations.Language
 import java.lang.reflect.Parameter
 import java.sql.ResultSet
@@ -21,13 +21,13 @@ abstract class Table<T : Any>(clazz: KClass<T>) {
      * match the order of arguments of constructor of [T].
      */
     fun select(@Language("SQL") sql: String, vararg args: Any): Collection<T> =
-        DatabaseManager.execute(sql) {
+        QueryExecutor.executor.execute(sql) {
             for (i in args.indices) {
                 it.setObject(i + 1, args[i])
             }
             val rs = it.executeQuery()
             val values = mutableListOf<T>()
-            val ctr = clazz.constructors.first { !it.isSynthetic }
+            val ctr = clazz.constructors.first { c -> !c.isSynthetic }
             while (rs.next()) {
                 val ctrArgs = mutableListOf<Any>()
                 ctr.parameters.forEachIndexed { index, param ->
@@ -88,7 +88,7 @@ abstract class Table<T : Any>(clazz: KClass<T>) {
                 }
                 .toTypedArray()
 
-        DatabaseManager.execute("INSERT INTO `$tableName` VALUES ($sqlValues)") {
+        QueryExecutor.executor.execute("INSERT INTO `$tableName` VALUES ($sqlValues)") {
             for (i in sqlActualValues.indices) {
                 it.setObject(i + 1, sqlActualValues[i])
             }

@@ -1,4 +1,4 @@
-package net.azisaba.api.velocity.schemes
+package net.azisaba.api.schemes
 
 import kotlinx.serialization.Serializable
 import net.azisaba.api.serializers.UUIDSerializer

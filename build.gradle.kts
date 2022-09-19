@@ -8,23 +8,14 @@ plugins {
     `java-library`
 }
 
+repositories {
+    mavenCentral()
+}
+
 group = "net.azisaba.api"
 version = "0.0.1"
 
 java.toolchain.languageVersion.set(JavaLanguageVersion.of(17))
-
-repositories {
-    mavenCentral()
-    maven { url = uri("https://maven.pkg.jetbrains.space/public/p/ktor/eap") }
-}
-
-dependencies {
-    api("org.mariadb.jdbc:mariadb-java-client:3.0.6")
-    api("com.zaxxer:HikariCP:5.0.1")
-    api("com.charleskorn.kaml:kaml:0.47.0") // YAML support for kotlinx.serialization
-    api("org.jetbrains.kotlinx:kotlinx-serialization-json:1.4.0")
-    testImplementation("org.jetbrains.kotlin:kotlin-test-junit:$kotlinVersion")
-}
 
 subprojects {
     apply {
@@ -44,6 +35,24 @@ subprojects {
     }
 
     tasks {
+        processResources {
+            filteringCharset = "UTF-8"
+            from(sourceSets.main.get().resources.srcDirs) {
+                include("**")
+
+                val tokenReplacementMap = mapOf(
+                    "version" to project.version,
+                    "name" to project.rootProject.name,
+                )
+
+                filter<org.apache.tools.ant.filters.ReplaceTokens>("tokens" to tokenReplacementMap)
+            }
+
+            duplicatesStrategy = DuplicatesStrategy.INCLUDE
+
+            from(projectDir) { include("LICENSE") }
+        }
+
         shadowJar {
             archiveFileName.set("${parent!!.name}-${this@subprojects.name}-${project.version}.jar")
         }

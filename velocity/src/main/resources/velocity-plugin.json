@@ -3,7 +3,7 @@
   "id": "azisaba-api",
   "name": "Azisaba API",
   "description": "Provides a command to generate API keys",
-  "version": "dev",
+  "version": "@version@",
   "url": "https://github.com/AzisabaNetwork/api",
   "authors": ["Azisaba Network"],
   "dependencies": [],

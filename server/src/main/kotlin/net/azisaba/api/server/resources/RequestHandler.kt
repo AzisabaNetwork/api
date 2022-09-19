@@ -9,7 +9,7 @@ import kotlinx.serialization.encodeToString
 import net.azisaba.api.server.util.JsonUtil.getJson
 import net.azisaba.api.server.util.toJsonElement
 
-sealed class RequestHandler {
+abstract class RequestHandler {
     abstract suspend fun PipelineContext<Unit, ApplicationCall>.handleRequest()
 }
 
