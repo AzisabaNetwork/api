@@ -14,7 +14,16 @@ object RedisManager {
             list.add(JSON.encodeToString(AuctionInfo.serializer(), auction))
         }
         pool.resource.use { jedis ->
-            jedis.mset(*list.toTypedArray())
+            val removeList = mutableListOf<String>()
+            jedis.mget(*jedis.keys("azisaba-api:auction:*").toTypedArray())
+                .map { JSON.decodeFromString(AuctionInfo.serializer(), it) }
+                .filter { it.expiresAt > 9000 }
+                .filter { a1 -> data.all { a2 -> a1.storeId != a2.storeId  } }
+                .forEach { auction ->
+                    removeList.add("azisaba-api:auction:${auction.storeId}")
+                    removeList.add(JSON.encodeToString(AuctionInfo.serializer(), auction.copy(expiresAt = 1L)))
+                }
+            jedis.mset(*(list + removeList).toTypedArray())
         }
     }
 }

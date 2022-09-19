@@ -2,6 +2,7 @@ package net.azisaba.api.spigot.tasks
 
 import com.charleskorn.kaml.Yaml
 import com.charleskorn.kaml.YamlConfiguration
+import net.azisaba.api.Logger
 import net.azisaba.api.spigot.PluginConfig
 import net.azisaba.api.spigot.RedisManager
 import net.azisaba.api.spigot.data.CAData
@@ -15,6 +16,8 @@ object UploadLifeAuctionsFileTask : AbstractTask() {
     override fun run() {
         val file = PluginConfig.instance.paths.lifeAuctions?.let { File(it) } ?: return
         if (!file.exists()) return
+        val start = System.currentTimeMillis()
+        Logger.currentLogger.info("Updating life auctions data")
         val data = yaml.decodeFromStream(CAData.serializer(), file.inputStream())
         RedisManager.uploadAuctionData(*data.items.values.map {
             val stack = ItemStack.deserializeBytes(Base64.getDecoder().decode(it.itemBytes))
@@ -30,5 +33,6 @@ object UploadLifeAuctionsFileTask : AbstractTask() {
             }
             it.toAuctionInfo(displayName, lore)
         }.toTypedArray())
+        Logger.currentLogger.info("Updated life auctions data (took {}ms)", System.currentTimeMillis() - start)
     }
 }
