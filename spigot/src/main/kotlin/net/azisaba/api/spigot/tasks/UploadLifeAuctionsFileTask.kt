@@ -33,6 +33,6 @@ object UploadLifeAuctionsFileTask : AbstractTask() {
             }
             it.toAuctionInfo(displayName, lore)
         }.toTypedArray())
-        Logger.currentLogger.info("Updated life auctions data (took {}ms)", System.currentTimeMillis() - start)
+        Logger.currentLogger.info("Updated life auctions data (took {} ms)", System.currentTimeMillis() - start)
     }
 }

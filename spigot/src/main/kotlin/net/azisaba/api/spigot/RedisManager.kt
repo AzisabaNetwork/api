@@ -23,6 +23,7 @@ object RedisManager {
                     removeList.add("azisaba-api:auction:${auction.storeId}")
                     removeList.add(JSON.encodeToString(AuctionInfo.serializer(), auction.copy(expiresAt = 1L)))
                 }
+            if (list.isEmpty() && removeList.isEmpty()) return@use
             jedis.mset(*(list + removeList).toTypedArray())
         }
     }
