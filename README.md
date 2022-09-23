@@ -14,6 +14,8 @@ Rate limit is 120 requests per minute.
       "/counts",
       "/players/{uuid}",
       "/players/by-name/{name}",
+      "/servers/life/auctions",
+      "/servers/life/auctions/{id}",
       "/players/{uuid}/punishments",
       "/punishments/{id}"
     ]
