@@ -14,7 +14,13 @@ import net.azisaba.api.util.JSON
 @Resource("/servers/life/auctions")
 class Auctions : RequestHandler() {
     override suspend fun PipelineContext<Unit, ApplicationCall>.handleRequest() {
-        call.respondJson(JSON.encodeToJsonElement(RedisManager.getAuctions()))
+        val allAuctions = RedisManager.getAuctions()
+        val includeExpired = call.parameters["includeExpired"]?.toBooleanStrictOrNull() ?: false
+        if (includeExpired) {
+            call.respondJson(JSON.encodeToJsonElement(allAuctions))
+        } else {
+            call.respondJson(JSON.encodeToJsonElement(allAuctions.filter { it.expiresAt > System.currentTimeMillis() }))
+        }
     }
 
     @Serializable

@@ -23,6 +23,8 @@ Rate limit is 120 requests per minute.
 }
 ```
 
+- `/servers/life/auctions?includeExpired=true` - Get all auctions (`includeExpired` defaults to false)
+
 ### Implemented features
 
 - Add `?pretty` at the end of the URL to get pretty JSON instead of minified JSON.
