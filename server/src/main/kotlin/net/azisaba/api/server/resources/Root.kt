@@ -2,7 +2,6 @@ package net.azisaba.api.server.resources
 
 import io.ktor.resources.*
 import io.ktor.server.application.*
-import io.ktor.server.response.*
 import io.ktor.util.pipeline.*
 import kotlinx.serialization.Serializable
 import net.azisaba.api.server.PlayerInfo
@@ -22,7 +21,6 @@ private val games = mapOf(
     ),
     "lgw" to "lgw.*".toRegex(),
     "pg" to "pg".toRegex(),
-    "tsl" to "tsl.*".toRegex(),
     "vanilife" to "vanilife.*".toRegex(),
     "despawn" to "despawn.*".toRegex(),
     "coretol" to "coretol.*".toRegex(),
