@@ -125,14 +125,14 @@ interface Logger {
          */
         val currentLogger: Logger
             get() {
-                if (Companion::logger.isInitialized) {
+                if (::logger.isInitialized) {
                     return logger
                 }
                 return defaultLogger
             }
 
         fun setLogger(newLogger: Logger) {
-            if (Companion::logger.isInitialized) {
+            if (::logger.isInitialized) {
                 throw IllegalStateException("Logger is already initialized")
             }
             logger = newLogger

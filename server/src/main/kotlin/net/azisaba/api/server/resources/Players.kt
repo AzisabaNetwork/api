@@ -38,6 +38,7 @@ class Players {
                         "lgw" to getLGW(uuid),
                         "despawn" to getDespawn(uuid),
                         "diverse" to getDiverse(uuid),
+                        "vanilife" to getVanilife(uuid),
                     )
                 )
 
@@ -94,6 +95,10 @@ class Players {
             private fun getDiverse(uuid: UUID): Map<String, Any> {
                 return getServerTemplate(uuid, "diverse")
                 // exp, money, veteranpoint, title might be added in the future
+            }
+
+            private fun getVanilife(uuid: UUID): Map<String, Any> {
+                return getServerTemplate(uuid, "vanilife")
             }
 
             private fun getGroups(uuid: UUID, server: String) =
