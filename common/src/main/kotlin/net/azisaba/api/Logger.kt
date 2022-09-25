@@ -12,17 +12,17 @@ import java.util.logging.Level
 interface Logger {
     fun info(message: String)
     fun info(message: String, p1: Any?)
-    fun info(message: String, p1: Any, p2: Any)
+    fun info(message: String, p1: Any?, p2: Any?)
     fun info(message: String, vararg params: Any?)
     fun info(message: String, throwable: Throwable?)
     fun warn(message: String)
     fun warn(message: String, p1: Any?)
-    fun warn(message: String, p1: Any, p2: Any)
+    fun warn(message: String, p1: Any?, p2: Any?)
     fun warn(message: String, vararg params: Any?)
     fun warn(message: String, throwable: Throwable?)
     fun error(message: String)
     fun error(message: String, p1: Any?)
-    fun error(message: String, p1: Any, p2: Any)
+    fun error(message: String, p1: Any?, p2: Any?)
     fun error(message: String, vararg params: Any?)
     fun error(message: String, throwable: Throwable?)
 
@@ -65,7 +65,7 @@ interface Logger {
                     logger.log(Level.INFO, format(message), p1)
                 }
 
-                override fun info(message: String, p1: Any, p2: Any) {
+                override fun info(message: String, p1: Any?, p2: Any?) {
                     logger.log(Level.INFO, format(message), arrayOf(p1, p2))
                 }
 
@@ -85,7 +85,7 @@ interface Logger {
                     logger.log(Level.WARNING, format(message), p1)
                 }
 
-                override fun warn(message: String, p1: Any, p2: Any) {
+                override fun warn(message: String, p1: Any?, p2: Any?) {
                     logger.log(Level.WARNING, format(message), arrayOf(p1, p2))
                 }
 
@@ -105,7 +105,7 @@ interface Logger {
                     logger.log(Level.SEVERE, format(message), p1)
                 }
 
-                override fun error(message: String, p1: Any, p2: Any) {
+                override fun error(message: String, p1: Any?, p2: Any?) {
                     logger.log(Level.SEVERE, format(message), arrayOf(p1, p2))
                 }
 
