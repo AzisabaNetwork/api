@@ -16,6 +16,24 @@ object Util {
         }
     }
 
+    inline fun <T, U, R> memoize2(expireAfter: Long = 0, crossinline fn: (T, U) -> R): (T, U) -> R {
+        val cache = mutableMapOf<Pair<T, U>, Pair<R, Long>>()
+
+        return { t, u ->
+            val pair = Pair(t, u)
+            val now = System.currentTimeMillis()
+            val (value, lastUsed) = cache[pair] ?: Pair(fn(t, u), now)
+            if (lastUsed == now || (expireAfter > 0 && now - lastUsed > expireAfter)) {
+                if (lastUsed != now) {
+                    cache[pair] = Pair(fn(t, u), now)
+                } else {
+                    cache[pair] = Pair(value, lastUsed)
+                }
+            }
+            value
+        }
+    }
+
     fun <R> memoizeSupplier(expireAfter: Long = 0, fn: () -> R): () -> R {
         val updating = AtomicBoolean(false)
         var cache: Pair<R, Long>? = null

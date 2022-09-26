@@ -5,7 +5,11 @@ import net.azisaba.api.util.JSON
 import redis.clients.jedis.JedisPool
 
 object RedisManager {
-    private val pool: JedisPool = PluginConfig.instance.redis.createPool()
+    val pool: JedisPool = PluginConfig.instance.redis.createPool()
+
+    init {
+        pool.resource.use { jedis -> jedis.ping() }
+    }
 
     fun uploadAuctionData(vararg data: AuctionInfo) {
         val list = mutableListOf<String>()

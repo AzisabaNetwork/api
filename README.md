@@ -16,6 +16,7 @@ Rate limit is 120 requests per minute.
       "/players/by-name/{name}",
       "/servers/life/auctions",
       "/servers/life/auctions/{id}",
+      "/servers/life/spawners",
       "/players/{uuid}/punishments",
       "/punishments/{id}"
     ]
@@ -23,7 +24,10 @@ Rate limit is 120 requests per minute.
 }
 ```
 
+### Other routes and parameters
+
 - `/servers/life/auctions?includeExpired=true` - Get all auctions (`includeExpired` defaults to false)
+- `/servers/life/spawners?child_server=lifepve1` - Get spawners on a specific child server (`child_server` defaults to all servers)
 
 ### Implemented features
 

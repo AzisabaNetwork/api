@@ -16,6 +16,7 @@ import kotlin.io.path.writeText
 @Serializable
 data class PluginConfig(
     val paths: FilePaths = FilePaths(),
+    val mythicMobs: MythicMobs = MythicMobs(),
     val redis: RedisConfig = RedisConfig(),
 //    val database: DatabaseConfig = DatabaseConfig(),
 ) {
@@ -51,6 +52,16 @@ data class FilePaths(
     @YamlComment("/path/to/plugins/CrazyAuctions/Data.yml")
     val lifeAuctions: String? = null,
 )
+
+@Serializable
+data class MythicMobs(
+    @YamlComment("If true, these settings will be uploaded to the Redis server.")
+    val enabled: Boolean = false,
+    val lifeServers: Map<String, List<String>> = mapOf(
+        "anyServerName" to listOf("spawnerName"),
+    ),
+)
+
 /*
 @SerialName("database")
 @Serializable

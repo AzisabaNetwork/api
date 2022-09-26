@@ -25,5 +25,14 @@ suspend inline fun <reified T> ApplicationCall.respondJson(
     status: HttpStatusCode? = null,
     noinline configure: OutgoingContent.() -> Unit = {}
 ) {
-    respondText(this.getJson().encodeToString(value.toJsonElement()), contentType, status, configure)
+    try {
+        respondText(this.getJson().encodeToString(value.toJsonElement()), contentType, status, configure)
+    } catch (e: IllegalStateException) {
+        try {
+            respondText(this.getJson().encodeToString(value), contentType, status, configure)
+        } catch (e2: Exception) {
+            e2.addSuppressed(e)
+            throw e2
+        }
+    }
 }

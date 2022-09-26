@@ -4,9 +4,10 @@ repositories {
 }
 
 dependencies {
-    implementation(project(":common"))
+    api(project(":common"))
+    api(project(":spigot-common"))
+    api(project(":spigot-mythic4_12"))
     implementation("redis.clients:jedis:4.2.3")
-    compileOnly("com.destroystokyo.paper:paper-api:1.15.2-R0.1-SNAPSHOT")
     testImplementation("org.junit.jupiter:junit-jupiter-api:5.9.0")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.9.0")
 }

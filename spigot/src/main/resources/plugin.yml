@@ -2,3 +2,5 @@ name: AzisabaAPI
 version: @version@
 main: net.azisaba.api.spigot.SpigotPlugin
 api-version: 1.15
+softdepend:
+  - MythicMobs
