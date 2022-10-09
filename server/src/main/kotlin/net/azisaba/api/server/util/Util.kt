@@ -56,4 +56,6 @@ object Util {
             }
         }
     }
+
+    fun <R> runNoinline(fn: () -> R): R = fn()
 }

@@ -4,6 +4,7 @@ import kotlinx.serialization.Serializable
 import net.azisaba.api.data.AuctionInfo
 import net.azisaba.api.data.MythicSpawnerData
 import net.azisaba.api.serializers.UUIDSerializer
+import net.azisaba.api.server.storage.PersistentDataStore
 import net.azisaba.api.server.util.Util
 import net.azisaba.api.util.JSON
 import org.slf4j.LoggerFactory
@@ -20,7 +21,13 @@ object RedisManager {
      */
     val getPlayers: () -> List<PlayerInfo> = Util.memoizeSupplier(1000 * 10) { fetchPlayers() }
 
-    val getAuctions: () -> List<AuctionInfo> = Util.memoizeSupplier(1000 * 60) { fetchAuctions() }
+    val getAuctions: () -> List<AuctionInfo> = Util.memoizeSupplier(1000 * 60) {
+        val container = PersistentDataStore.getListContainer<AuctionInfo>()
+        val list = (fetchAuctions() + (container["auctions"] ?: emptyList())).distinctBy { it.storeId }
+        container["auctions"] = list
+        PersistentDataStore.dirty = true
+        list
+    }
 
     val getAuction: (storeId: Long) -> AuctionInfo? = Util.memoize(1000 * 60) { id -> fetchAuction(id) }
 
@@ -59,16 +66,25 @@ object RedisManager {
             if (keys.isEmpty()) {
                 return emptyList()
             }
+            val toDelete = mutableListOf<String>()
             jedis.mget(*keys.toTypedArray()).mapNotNull { data ->
                 try {
                     if (data == null) {
                         null
                     } else {
-                        JSON.decodeFromString(AuctionInfo.serializer(), data)
+                        val ai = JSON.decodeFromString(AuctionInfo.serializer(), data)
+                        if (ai.timeTillDataRemoval < System.currentTimeMillis()) {
+                            toDelete.add("azisaba-api:auction:${ai.storeId}")
+                        }
+                        ai
                     }
                 } catch (e: Exception) {
                     log.error("Failed to deserialize AuctionInfo", e)
                     null
+                }
+            }.also {
+                if (toDelete.isNotEmpty()) {
+                    jedis.del(*toDelete.toTypedArray())
                 }
             }
         }

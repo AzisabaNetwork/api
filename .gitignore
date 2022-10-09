@@ -36,3 +36,4 @@ out/
 .vscode/
 
 /config.yml
+/persistent-data.json
