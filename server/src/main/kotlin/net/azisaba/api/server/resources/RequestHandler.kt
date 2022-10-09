@@ -23,13 +23,17 @@ suspend inline fun <reified T> ApplicationCall.respondJson(
     value: T,
     contentType: ContentType? = ContentType.Application.Json,
     status: HttpStatusCode? = null,
-    noinline configure: OutgoingContent.() -> Unit = {}
+    configure: OutgoingContent.() -> Unit = {},
 ) {
     try {
-        respondText(this.getJson().encodeToString(value.toJsonElement()), contentType, status, configure)
+        val text = this.getJson().encodeToString(value.toJsonElement())
+        val message = TextContent(text, defaultTextContentType(contentType), status).apply(configure)
+        respond(message)
     } catch (e: IllegalStateException) {
         try {
-            respondText(this.getJson().encodeToString(value), contentType, status, configure)
+            val text = this.getJson().encodeToString(value)
+            val message = TextContent(text, defaultTextContentType(contentType), status).apply(configure)
+            respond(message)
         } catch (e2: Exception) {
             e2.addSuppressed(e)
             throw e2
