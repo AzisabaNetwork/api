@@ -50,9 +50,9 @@ data class DatabaseConfig(
     val hostname: String = "localhost",
     val port: Int = 3306,
     @YamlComment(
-        "Make sure the user has the correct permissions to access all of the databases provided below!",
+        "Make sure the user has the correct permissions to access all the databases provided below!",
         "Using root is not recommended because it opens up a large security hole.",
-        "Note that the user does NOT require the any mutation privileges on the databases unless explicitly noted.",
+        "Note that the user does NOT require any mutation privileges on the databases unless explicitly noted.",
     )
     val username: String = "azisaba_api",
     val password: String = "",
