@@ -16,20 +16,28 @@ import org.slf4j.LoggerFactory
 
 fun main() {
     ServerConfig // load configuration
-    embeddedServer(Netty, port = 8080, host = "0.0.0.0", watchPaths = listOf("classes")) {
-        LoggerFactory.getLogger("api-ktor").registerLogger() // register logger
-        TaskScheduler
-        PersistentDataStore // Load persistent data
-        install(Resources)
-        install(CallLogging)
-        install(CORS) {
-            anyHost()
-            allowHeader(HttpHeaders.ContentType)
-        }
+    embeddedServer(
+        Netty,
+        port = 8080,
+        host = "0.0.0.0",
+        watchPaths = listOf("classes"),
+        module = Application::appModule
+    ).start(wait = true)
+}
 
-        DatabaseManager // Make connections to database
-        configureRouting()
-        configureSecurity()
-        configureSerialization()
-    }.start(wait = true)
+fun Application.appModule() {
+    LoggerFactory.getLogger("api-ktor").registerLogger() // register logger
+    TaskScheduler
+    PersistentDataStore // Load persistent data
+    install(Resources)
+    install(CallLogging)
+    install(CORS) {
+        anyHost()
+        allowHeader(HttpHeaders.ContentType)
+    }
+
+    DatabaseManager // Make connections to database
+    configureRouting()
+    configureSecurity()
+    configureSerialization()
 }
