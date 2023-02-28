@@ -43,7 +43,7 @@ fun Application.configureSecurity() {
 
 // TODO: implement rate limit with redis
 val rateLimits = ConcurrentHashMap<String, Long>()
-const val MAX_REQUESTS_PER_MINUTE = 120
+const val MAX_REQUESTS_PER_MINUTE = 240
 
 class APIKeyAuthenticationProvider(config: Config) : AuthenticationProvider(config) {
     companion object {
