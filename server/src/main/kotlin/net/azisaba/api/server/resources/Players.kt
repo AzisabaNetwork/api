@@ -60,9 +60,9 @@ class Players {
                 val rank = groups
                     .filter { it.startsWith("rank") }
                     .map { it.removePrefix("rank") }
-                    .firstOrNull()
-                    ?.toInt()
-                    ?: 1
+                    .mapNotNull { it.toIntOrNull() }
+                    .maxOrNull()
+                    ?: 0
                 val eco = transaction(DatabaseManager.lifeMpdb) {
                     LifeMpdb.Economy.find(LifeMpdb.EconomyTable.playerUUID eq uuid.toString()).firstOrNull()
                 }
