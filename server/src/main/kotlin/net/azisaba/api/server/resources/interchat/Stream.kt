@@ -40,14 +40,14 @@ class Stream : WebSocketRequestHandler() {
                     when (packet) {
                         is AuthPacket -> {}
                         is MessagePacket -> {
-                            val guildId = packet.guildId ?: InterChatApi.userManager.fetchUser(conn.uuid!!).join().focusedGuild()
+                            val guildId = packet.guildId ?: InterChatApi.userManager.fetchUser(conn.uuid!!).join().selectedGuild()
                             InterChatApi.guildManager.getMember(guildId, conn.uuid!!).exceptionally { null }.join() ?: continue
                             val guildMessagePacket =
                                 GuildMessagePacket(guildId, conn.server, conn.uuid!!, packet.message, null)
                             Protocol.GUILD_MESSAGE.send(JedisBoxProvider.get().pubSubHandler, guildMessagePacket)
                         }
-                        is FocusPacket -> {
-                            InterChatApi.queryExecutor.query("UPDATE `players` SET `focused_guild` = ? WHERE `id` = ?") { ps ->
+                        is SelectPacket -> {
+                            InterChatApi.queryExecutor.query("UPDATE `players` SET `selected_guild` = ? WHERE `id` = ?") { ps ->
                                 ps.setLong(1, packet.guildId)
                                 ps.setString(2, conn.uuid.toString())
                                 ps.executeUpdate()
@@ -75,9 +75,9 @@ class Stream : WebSocketRequestHandler() {
     @Serializable
     data class MessagePacket(val guildId: Long? = null, val message: String) : Packet
 
-    @SerialName("focus")
+    @SerialName("select")
     @Serializable
-    data class FocusPacket(val guildId: Long) : Packet
+    data class SelectPacket(val guildId: Long) : Packet
 
     @SerialName("switch_server")
     @Serializable
