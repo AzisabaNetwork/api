@@ -73,7 +73,7 @@ class Stream : WebSocketRequestHandler() {
 
     @SerialName("message")
     @Serializable
-    data class MessagePacket(val guildId: Long?, val message: String) : Packet
+    data class MessagePacket(val guildId: Long? = null, val message: String) : Packet
 
     @SerialName("focus")
     @Serializable
