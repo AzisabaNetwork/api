@@ -2,8 +2,8 @@ val kotlinVersion: String by project
 val exposedVersion: String by project
 
 plugins {
-    kotlin("jvm") version "1.7.10"
-    id("org.jetbrains.kotlin.plugin.serialization") version "1.7.10"
+    kotlin("jvm") version "1.9.10"
+    id("org.jetbrains.kotlin.plugin.serialization") version "1.9.10"
     id("com.github.johnrengelman.shadow") version "7.1.2"
     `java-library`
 }
@@ -32,6 +32,7 @@ subprojects {
 
     repositories {
         mavenCentral()
+        maven { url = uri("https://repo.azisaba.net/repository/maven-public/") }
     }
 
     tasks {

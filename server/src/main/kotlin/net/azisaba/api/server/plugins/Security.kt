@@ -41,6 +41,21 @@ fun Application.configureSecurity() {
     }
 }
 
+fun authSimple(token: String): APIKeyPrincipal? {
+    return transaction(DatabaseManager.azisabaApi) {
+        val key = keyAuthenticator(token) ?: run {
+            return@transaction null
+        }
+        val current = rateLimits.getOrDefault(key.key, 0)
+        if (current > MAX_REQUESTS_PER_MINUTE) {
+            return@transaction null
+        }
+        rateLimits[key.key] = current + 1
+        //key.uses++
+        return@transaction APIKeyPrincipal(UUID.fromString(key.player))
+    }
+}
+
 // TODO: implement rate limit with redis
 val rateLimits = ConcurrentHashMap<String, Long>()
 const val MAX_REQUESTS_PER_MINUTE = 240
@@ -90,7 +105,7 @@ class APIKeyAuthenticationProvider(config: Config) : AuthenticationProvider(conf
     }
 
     override suspend fun onAuthenticate(context: AuthenticationContext) {
-        context.principal = tryAuth(context)
+        tryAuth(context)?.let { context.principal(it) }
     }
 
     class Config internal constructor(name: String?) : AuthenticationProvider.Config(name)

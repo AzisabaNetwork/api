@@ -2,6 +2,7 @@ val ktorVersion: String by project
 val kotlinVersion: String by project
 val logbackVersion: String by project
 val exposedVersion: String by project
+val adventureVersion = "4.11.0"
 
 plugins {
     application
@@ -31,8 +32,13 @@ dependencies {
     implementation("io.ktor:ktor-server-netty-jvm:$ktorVersion")
     implementation("io.ktor:ktor-server-call-logging:$ktorVersion")
     implementation("io.ktor:ktor-server-cors:$ktorVersion")
+    implementation("io.ktor:ktor-server-websockets:$ktorVersion")
     implementation("ch.qos.logback:logback-classic:$logbackVersion")
     implementation("redis.clients:jedis:4.2.3")
+    implementation("net.azisaba.interchat:api:2.6.0")
+    implementation("io.ktor:ktor-server-websockets-jvm:2.3.5")
+    implementation("net.kyori:adventure-api:$adventureVersion")
+    implementation("net.kyori:adventure-text-serializer-legacy:$adventureVersion")
     testImplementation("io.ktor:ktor-server-tests-jvm:$ktorVersion")
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit:$kotlinVersion")
 }

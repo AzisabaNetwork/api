@@ -4,12 +4,8 @@ import io.ktor.server.application.*
 import io.ktor.server.auth.*
 import io.ktor.server.resources.*
 import io.ktor.server.routing.*
-import net.azisaba.api.server.resources.Counts
-import net.azisaba.api.server.resources.Players
-import net.azisaba.api.server.resources.Punishments
-import net.azisaba.api.server.resources.RequestHandler
-import net.azisaba.api.server.resources.handle
-import net.azisaba.api.server.resources.respondJson
+import io.ktor.server.websocket.*
+import net.azisaba.api.server.resources.*
 
 fun Application.configureRouting() {
     routing {
@@ -21,6 +17,9 @@ fun Application.configureRouting() {
             )
         }
 
+        // websocket does not support authentication
+        webSocket<net.azisaba.api.server.resources.interchat.Stream>("/interchat/stream")
+
         authenticate("api-key") {
             get<Counts>() // /counts
             get<Players.Id>() // /players/{uuid}
@@ -28,6 +27,7 @@ fun Application.configureRouting() {
             get<net.azisaba.api.server.resources.servers.life.Auctions>()
             get<net.azisaba.api.server.resources.servers.life.Auctions.Id>()
             get<net.azisaba.api.server.resources.servers.life.Spawners>()
+            get<net.azisaba.api.server.resources.interchat.Guilds.List>()
         }
 
         authenticate("punishments") {
@@ -38,6 +38,7 @@ fun Application.configureRouting() {
 }
 
 inline fun <reified T : RequestHandler> Route.get() = this.get<T> { this.handle(it) }
+inline fun <reified T : WebSocketRequestHandler> Route.webSocket(path: String) = this.webSocket(path) { this.handle(T::class.java.getConstructor().newInstance()) }
 
 fun Route.getAllRoutes(): List<Route> {
     val routes = mutableListOf(this)

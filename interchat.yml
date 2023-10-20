@@ -1,0 +1,25 @@
+redis:
+  hostname: "192.168.100.101"
+  port: 6379
+  username: null
+  password: "jS39oWJjV9J%Bo%GZX1Wrb9WDDY2GE#CvBx@kQWtXMXteFV^qV42Ay0D&s1vPQuNtjjx%PBzFZy0yYw73WA&9&AZr^R0&!tT*Qa"
+database:
+  driver: "org.mariadb.jdbc.Driver"
+  # Change to jdbc:mysql if you want to use MySQL instead of MariaDB
+  scheme: "jdbc:mariadb"
+  hostname: "192.168.100.101"
+  port: 3306
+  username: "interchat"
+  password: "9Vt8qqwR6jW&EEeB5Ru5"
+  name: "interchat"
+  properties:
+    "useSSL": "false"
+    "verifyServerCertificate": "true"
+    "prepStmtCacheSize": "250"
+    "prepStmtCacheSqlLimit": "2048"
+    "cachePrepStmts": "true"
+    "useServerPrepStmts": "true"
+    "socketTimeout": "60000"
+    "useLocalSessionState": "true"
+    "rewriteBatchedStatements": "true"
+    "maintainTimeStats": "false"
