@@ -196,4 +196,19 @@ class Stream : WebSocketRequestHandler() {
             )
         }
     }
+
+    @SerialName("nick")
+    @Serializable
+    data class NickPacket(val nickname: String? = null) : Packet {
+        override suspend fun handle(connection: ConnectedSocket) {
+            val selectedGuild = connection.getSelectedGuildId()
+            if (selectedGuild == -1L) {
+                connection.sendPacket(OutgoingErrorMessagePacket("ギルドが選択されていません。"))
+                return
+            }
+            val member = InterChatApi.guildManager.getMember(selectedGuild, connection.uuid!!).join()
+            GuildMember(member.guildId(), member.uuid(), member.role(), nickname, member.hiddenByMember()).update().join()
+            connection.sendPacket(OutgoingMessagePacket("ニックネームを設定しました。($nickname)"))
+        }
+    }
 }
