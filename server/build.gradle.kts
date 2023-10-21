@@ -39,6 +39,7 @@ dependencies {
     implementation("io.ktor:ktor-server-websockets-jvm:2.3.5")
     implementation("net.kyori:adventure-api:$adventureVersion")
     implementation("net.kyori:adventure-text-serializer-legacy:$adventureVersion")
+    implementation("net.kyori:adventure-text-serializer-gson:$adventureVersion")
     testImplementation("io.ktor:ktor-server-tests-jvm:$ktorVersion")
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit:$kotlinVersion")
 }
