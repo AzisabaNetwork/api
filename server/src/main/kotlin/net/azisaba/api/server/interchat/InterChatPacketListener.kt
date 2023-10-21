@@ -99,13 +99,13 @@ object InterChatPacketListener : PacketListener {
                                 .append(Component.text("承認(Accept)"))
                                 .append(Component.text("]"))
                                 .decorate(TextDecoration.BOLD)
-                                .clickEvent(ClickEvent.runCommand("/cguild accept ${guild.name()}")),
+                                .clickEvent(ClickEvent.suggestCommand("/cguild accept ${guild.name()}")),
                             Component.space(),
                             Component.text("[", NamedTextColor.RED)
                                 .append(Component.text("拒否(Reject)"))
                                 .append(Component.text("]"))
                                 .decorate(TextDecoration.BOLD)
-                                .clickEvent(ClickEvent.runCommand("/cguild reject ${guild.name()}"))
+                                .clickEvent(ClickEvent.suggestCommand("/cguild reject ${guild.name()}"))
                         )))
                         socket.sendMessage(Component.text("------------------------------", NamedTextColor.YELLOW))
                     }
