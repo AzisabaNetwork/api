@@ -39,6 +39,9 @@ class Players {
                         "despawn" to getDespawn(uuid),
                         "diverse" to getDiverse(uuid),
                         "vanilife" to getVanilife(uuid),
+                        "lobby" to getLobby(uuid),
+                        "jg" to getJG(uuid),
+                        "afnw2" to getAfnw2(uuid),
                     )
                 )
 
@@ -99,6 +102,18 @@ class Players {
 
             private fun getVanilife(uuid: UUID): Map<String, Any> {
                 return getServerTemplate(uuid, "vanilife")
+            }
+
+            private fun getJG(uuid: UUID): Map<String, Any> {
+                return getServerTemplate(uuid, "jg")
+            }
+
+            private fun getAfnw2(uuid: UUID): Map<String, Any> {
+                return getServerTemplate(uuid, "afnw2")
+            }
+
+            private fun getLobby(uuid: UUID): Map<String, Any> {
+                return getServerTemplate(uuid, "lobby")
             }
 
             private fun getGroups(uuid: UUID, server: String) =
