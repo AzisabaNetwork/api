@@ -121,6 +121,7 @@ class Players {
                     .filter { it.server == server && it.world == "global" }
                     .map { it.permission.removePrefix("group.") }
                     .mapNotNull { filterGroup(it) }
+                    .distinct()
 
             private fun filterGroup(rawGroup: String): String? {
                 val group = rawGroup
