@@ -9,6 +9,7 @@ import java.util.UUID
 
 @OptIn(ExperimentalSerializationApi::class)
 val JSON = Json {
+    ignoreUnknownKeys = true
     serializersModule = SerializersModule {
         contextual(Any::class, DynamicLookupSerializer)
         contextual(UUID::class, UUIDSerializer)

@@ -5,6 +5,7 @@ package net.azisaba.api.server.interchat
 import net.azisaba.api.server.interchat.protocol.OutgoingErrorMessagePacket
 import net.azisaba.interchat.api.InterChat
 import net.azisaba.interchat.api.Logger
+import net.azisaba.interchat.api.data.UserDataProvider
 import net.azisaba.interchat.api.guild.GuildBan
 import net.azisaba.interchat.api.guild.GuildManager
 import net.azisaba.interchat.api.guild.SQLGuildManager
@@ -43,6 +44,8 @@ object InterChatApi : InterChat {
     override fun getUserManager(): UserManager = userManager
 
     override fun getAsyncExecutor(): Executor = asyncExecutor
+
+    override fun getUserDataProvider(): UserDataProvider = UserDataProviderImpl
 
     suspend fun getUserByName(connection: ConnectedSocket, name: String): User? {
         val users = userManager.fetchUserByUsername(name).join()

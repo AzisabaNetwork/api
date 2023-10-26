@@ -12,7 +12,11 @@ import redis.clients.jedis.JedisPoolConfig
 import java.io.File
 
 @Serializable
-data class ServerConfig(val database: DatabaseConfig = DatabaseConfig(), val redis: RedisConfig = RedisConfig()) {
+data class ServerConfig(
+    val hypixelApiKey: String = "",
+    val database: DatabaseConfig = DatabaseConfig(),
+    val redis: RedisConfig = RedisConfig(),
+) {
     companion object {
         val instance: ServerConfig
 

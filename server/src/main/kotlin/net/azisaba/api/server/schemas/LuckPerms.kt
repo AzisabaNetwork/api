@@ -65,6 +65,12 @@ object LuckPerms {
                             it.world == "global" &&
                             groups.contains(it.permission.removePrefix("group."))
                 }
+
+            val getPermissions = Util.memoize<UUID, List<UserPermissions>>(1000 * 60) {
+                transaction(DatabaseManager.luckPerms) {
+                    UserPermissions.find { UserPermissionsTable.uuid eq it.toString() }.toList()
+                }
+            }
         }
 
         val uuid by UserPermissionsTable.uuid
@@ -102,6 +108,12 @@ object LuckPerms {
                         ?.removePrefix("weight.")
                         ?.toLong()
                         ?: 0
+                }
+            }
+
+            val getPermissions = Util.memoize<String, List<GroupPermissions>>(1000 * 60) {
+                transaction(DatabaseManager.luckPerms) {
+                    GroupPermissions.find { GroupPermissionsTable.name eq it }.toList()
                 }
             }
         }

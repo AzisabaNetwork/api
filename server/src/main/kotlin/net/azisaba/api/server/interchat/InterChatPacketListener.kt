@@ -48,6 +48,7 @@ object InterChatPacketListener : PacketListener {
             }
             val members = guild.members.join()
             val nickname = members.stream().filter { it.uuid() == user.id() }.findAny().map(GuildMember::nickname)
+            UserDataProviderImpl.requestDataAsync(user.id(), packet.server())
             val formattedText = MessageFormatter.format(
                 guild.format(),
                 guild,

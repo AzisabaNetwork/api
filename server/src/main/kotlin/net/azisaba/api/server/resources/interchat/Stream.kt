@@ -7,10 +7,7 @@ import io.ktor.server.websocket.*
 import io.ktor.websocket.*
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import net.azisaba.api.server.interchat.ConnectedSocket
-import net.azisaba.api.server.interchat.InterChatApi
-import net.azisaba.api.server.interchat.InterChatPacketListener
-import net.azisaba.api.server.interchat.JedisBoxProvider
+import net.azisaba.api.server.interchat.*
 import net.azisaba.api.server.interchat.protocol.OutgoingErrorMessagePacket
 import net.azisaba.api.server.interchat.protocol.OutgoingMessagePacket
 import net.azisaba.api.server.plugins.authSimple
@@ -99,6 +96,7 @@ class Stream : WebSocketRequestHandler() {
     data class SwitchServerPacket(val server: String) : Packet {
         override suspend fun handle(connection: ConnectedSocket) {
             connection.server = server
+            UserDataProviderImpl.requestDataAsync(connection.uuid!!, server)
         }
     }
 

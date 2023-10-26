@@ -28,6 +28,7 @@ fun Application.configureRouting() {
             get<net.azisaba.api.server.resources.servers.life.Auctions.Id>()
             get<net.azisaba.api.server.resources.servers.life.Spawners>()
             get<net.azisaba.api.server.resources.interchat.Guilds.List>()
+            get<net.azisaba.api.server.resources.interchat.UserData>()
         }
 
         authenticate("punishments") {
