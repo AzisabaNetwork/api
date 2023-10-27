@@ -16,8 +16,7 @@ import java.nio.file.Path
 import java.util.Collections
 import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.concurrent.schedule
-import kotlin.io.path.readText
-import kotlin.io.path.writeText
+import kotlin.io.path.*
 
 object PersistentDataStore {
     private val path: Path = File("persistent-data.json").toPath()
@@ -52,6 +51,7 @@ object PersistentDataStore {
         getListContainerOrNull() ?: PersistentListDataContainer(List::class.java as Class<List<T>>, T::class.java).also { containers.add(it) }
 
     fun save() {
+        path.copyTo(path.resolve("../${path.name}.bak"), true)
         val array = JsonArray(containers.map { JSON.encodeToJsonElement(it.asSerialized()) })
         path.writeText(JSON.encodeToString(array))
     }
@@ -59,8 +59,21 @@ object PersistentDataStore {
     fun load() {
         containers.clear()
         if (Files.exists(path)) {
-            JSON.parseToJsonElement(path.readText()).jsonArray.forEach { element ->
-                containers.add(JSON.decodeFromJsonElement(ISerializedPersistentDataContainer.serializer(), element).asPersistentDataContainer())
+            try {
+                JSON.parseToJsonElement(path.readText()).jsonArray.forEach { element ->
+                    containers.add(
+                        JSON.decodeFromJsonElement(ISerializedPersistentDataContainer.serializer(), element)
+                            .asPersistentDataContainer()
+                    )
+                }
+            } catch (e: Exception) {
+                val bakFile = path.resolve("../${path.name}.bak")
+                if (!bakFile.exists()) {
+                    throw RuntimeException("persistent-data.json is corrupted and no backup available", e)
+                }
+                Logger.currentLogger.error("persistent-data.json is corrupted, trying to restore from backup")
+                bakFile.moveTo(path, true)
+                load()
             }
         }
     }
