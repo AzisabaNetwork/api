@@ -1,0 +1,42 @@
+openapi: 3.0.0
+info:
+  title: "Azisaba API"
+  description: ""
+  version: "dev"
+  termsOfService: "https://azisaba.net/terms/"
+servers:
+  - url: https://api-ktor.azisaba.net
+    description: Production server
+paths:
+  /interchat/guilds/list:
+    get:
+      summary: Returns a list of joined guilds of authenticated user.
+      responses:
+        '200':
+          description: A JSON array of guilds
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Guild"
+components:
+  schemas:
+    Guild:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          example: 100
+        name:
+          type: string
+          example: aaaaaa
+        format:
+          type: string
+        capacity:
+          type: integer
+        deleted:
+          type: boolean
+        open:
+          type: boolean
