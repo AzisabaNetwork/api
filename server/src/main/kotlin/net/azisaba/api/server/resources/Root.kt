@@ -21,6 +21,7 @@ private val games = mapOf(
     ),
     "lgw" to "lgw.*".toRegex(),
     "pg" to "pg".toRegex(),
+    "afnw" to "afnw\\d*".toRegex(),
     "vanilife" to "vanilife.*".toRegex(),
     "despawn" to "despawn.*".toRegex(),
     "coretol" to "coretol.*".toRegex(),
