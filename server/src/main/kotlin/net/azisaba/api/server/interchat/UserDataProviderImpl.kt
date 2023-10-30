@@ -1,10 +1,13 @@
 package net.azisaba.api.server.interchat
 
+import io.ktor.client.*
+import io.ktor.client.engine.cio.*
+import io.ktor.client.request.*
+import io.ktor.client.statement.*
 import kotlinx.coroutines.runBlocking
+import net.azisaba.api.Logger
 import net.azisaba.api.server.schemas.LuckPerms
 import net.azisaba.api.server.util.Util
-import net.azisaba.api.server.util.hypixel.HypixelAPI
-import net.azisaba.api.server.util.hypixel.HypixelPlayerData
 import net.azisaba.interchat.api.data.ChatMetaNodeData
 import net.azisaba.interchat.api.data.UserDataProvider
 import java.util.*
@@ -16,6 +19,11 @@ object UserDataProviderImpl : UserDataProvider {
     private val requestDataCooldown = ConcurrentHashMap<UUID, Long>()
     private val prefix = ConcurrentHashMap<UUID, MutableMap<String, String>>()
     private val suffix = ConcurrentHashMap<UUID, MutableMap<String, String>>()
+    private val client = HttpClient(CIO) {
+        engine {
+            requestTimeout = 1000 * 30
+        }
+    }
 
     override fun getPrefix(uuid: UUID): MutableMap<String, String> = prefix.computeIfAbsent(uuid) { mutableMapOf() }
 
@@ -28,12 +36,14 @@ object UserDataProviderImpl : UserDataProvider {
         val suffixes = suffix.computeIfAbsent(uuid) { mutableMapOf() }
         InterChatApi.asyncExecutor.execute {
             runBlocking {
-                // Hypixel Server
-                if (server == "hypixel.net" || server.endsWith(".hypixel.net")) {
-                    val data = HypixelAPI.get<HypixelPlayerData>("https://api.hypixel.net/player?uuid=$uuid")
-                    prefixes[server] = data.player?.getPrefix() ?: "§7"
-                    suffixes[server] = ""
+                val data = try {
+                    client.get("https://interchat-userdata-worker.azisaba.workers.dev/userdata?uuid=$uuid&server=$server").bodyAsText()
+                } catch (e: Exception) {
+                    Logger.currentLogger.warn("Error querying userdata", e)
+                    ""
                 }
+                prefixes[server] = data
+                suffixes[server] = ""
                 prefixes += ChatMetaNodeData.toMap(getChatMetaNodeDataList(uuid, "prefix"))
                 suffixes += ChatMetaNodeData.toMap(getChatMetaNodeDataList(uuid, "suffix"))
             }

@@ -28,9 +28,13 @@ object PersistentDataStore {
         load()
         Logger.currentLogger.info("Loaded persistent data from ${path.toAbsolutePath()}")
         TaskScheduler.schedule(1000 * 30, 1000 * 30) {
-            if (dirty) {
-                save()
-                Logger.currentLogger.info("Saved persistent data in background")
+            try {
+                if (dirty) {
+                    save()
+                    Logger.currentLogger.info("Saved persistent data in background")
+                }
+            } catch (e: Exception) {
+                Logger.currentLogger.error("Failed to save persistent data", e)
             }
         }
     }

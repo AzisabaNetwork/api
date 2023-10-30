@@ -2,17 +2,11 @@ package net.azisaba.api.server.resources.interchat
 
 import io.ktor.resources.*
 import io.ktor.server.application.*
-import io.ktor.server.response.*
 import io.ktor.util.pipeline.*
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.encodeToString
-import kotlinx.serialization.json.encodeToJsonElement
 import net.azisaba.api.server.interchat.UserDataProviderImpl
 import net.azisaba.api.server.resources.RequestHandler
 import net.azisaba.api.server.resources.respondJson
-import net.azisaba.api.server.util.hypixel.HypixelAPI
-import net.azisaba.api.server.util.hypixel.HypixelPlayerData
-import net.azisaba.api.util.JSON
 import net.azisaba.interchat.api.data.ChatMetaNodeData
 import java.util.*
 
@@ -32,14 +26,6 @@ class UserData : RequestHandler() {
         }
         val server = call.request.queryParameters["server"] ?: run {
             return call.respondJson(empty)
-        }
-        if (server == "hypixel.net" || server.endsWith(".hypixel.net")) {
-            val data = HypixelAPI.get<HypixelPlayerData>("https://api.hypixel.net/player?uuid=$uuid")
-            return call.respondJson(mapOf(
-                "prefix" to mapOf(server to data.player?.getPrefix()),
-                "suffix" to emptyMap<String, String>(),
-//                "raw" to JSON.encodeToJsonElement(data),
-            ))
         }
         // results may be cached up to an hour
         return call.respondJson(
