@@ -42,8 +42,10 @@ object UserDataProviderImpl : UserDataProvider {
                     Logger.currentLogger.warn("Error querying userdata", e)
                     ""
                 }
-                prefixes[server] = data
-                suffixes[server] = ""
+                if (data.isNotBlank()) {
+                    prefixes[server] = data
+                    suffixes[server] = ""
+                }
                 prefixes += ChatMetaNodeData.toMap(getChatMetaNodeDataList(uuid, "prefix"))
                 suffixes += ChatMetaNodeData.toMap(getChatMetaNodeDataList(uuid, "suffix"))
             }
