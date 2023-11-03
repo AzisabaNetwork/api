@@ -186,7 +186,7 @@ class Stream : WebSocketRequestHandler() {
                 val actor = InterChatApi.userManager.fetchUser(connection.uuid!!).join()
                 InterChatApi.submitLog(guild.id(), actor, "Accepted the invite from " + invite.actor() + " (" + actor.name() + ") and joined the guild")
             } else {
-                connection.sendPacket(OutgoingMessagePacket("${guild.name()}の招待を却下しました。"))
+                connection.sendMessage("${guild.name()}の招待を却下しました。")
             }
             Protocol.GUILD_INVITE_RESULT.send(
                 JedisBoxProvider.get().pubSubHandler,
@@ -206,7 +206,24 @@ class Stream : WebSocketRequestHandler() {
             }
             val member = InterChatApi.guildManager.getMember(selectedGuild, connection.uuid!!).join()
             GuildMember(member.guildId(), member.uuid(), member.role(), nickname, member.hiddenByMember()).update().join()
-            connection.sendPacket(OutgoingMessagePacket("ニックネームを設定しました。($nickname)"))
+            connection.sendMessage("ニックネームを設定しました。($nickname)")
+        }
+    }
+
+    @SerialName("toggle_translate")
+    @Serializable
+    data class ToggleTranslatePacket(val doTranslate: Boolean) : Packet {
+        override suspend fun handle(connection: ConnectedSocket) {
+            InterChatApi.queryExecutor.query("UPDATE `players` SET `translate_kana` = ? WHERE `id` = ?") { ps ->
+                ps.setBoolean(1, doTranslate)
+                ps.setString(2, connection.uuid.toString())
+                ps.executeUpdate()
+            }
+            if (doTranslate) {
+                connection.sendMessage("かな変換をオンにしました。")
+            } else {
+                connection.sendMessage("かな変換をオフにしました。")
+            }
         }
     }
 }
