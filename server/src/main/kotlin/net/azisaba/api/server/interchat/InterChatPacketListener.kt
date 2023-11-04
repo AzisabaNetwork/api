@@ -25,18 +25,20 @@ import java.util.concurrent.atomic.AtomicLong
 object InterChatPacketListener : PacketListener {
     val sockets: MutableSet<ConnectedSocket> = Collections.synchronizedSet(LinkedHashSet())
     val getHideAllUntil = Util.memoize<UUID, Long>(10000) { uuid ->
-        val value = AtomicLong()
         try {
-            InterChatApi.queryExecutor.query("SELECT `hide_all_until` FROM `players` WHERE `id` = ?") { ps ->
+            InterChatApi.querySql("SELECT `hide_all_until` FROM `players` WHERE `id` = ?") { ps ->
                 ps.setString(1, uuid.toString())
                 ps.executeQuery().use { rs ->
                     if (rs.next()) {
-                        value.set(rs.getLong("hide_all_until"))
+                        rs.getLong("hide_all_until")
+                    } else {
+                        0L
                     }
                 }
             }
-        } catch (_: Exception) {}
-        value.get()
+        } catch (_: Exception) {
+            0L
+        }
     }
 
     override fun handleGuildMessage(packet: GuildMessagePacket) {

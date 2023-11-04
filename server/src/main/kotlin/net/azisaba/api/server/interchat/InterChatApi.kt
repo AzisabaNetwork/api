@@ -37,6 +37,9 @@ object InterChatApi : InterChat {
     private val guildManager = SQLGuildManager(queryExecutor)
     private val userManager = SQLUserManager(queryExecutor)
 
+    inline fun <R> querySql(sql: String, action: (PreparedStatement) -> R) =
+        dataSource.connection.use { conn -> conn.prepareStatement(sql).use { action(it) } }
+
     override fun getLogger(): Logger = Logger.getCurrentLogger()
 
     override fun getGuildManager(): GuildManager = guildManager
