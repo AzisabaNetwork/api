@@ -9,7 +9,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import net.azisaba.api.serializers.UUIDSerializer
 import net.azisaba.api.server.interchat.*
 import net.azisaba.api.server.interchat.protocol.OutgoingErrorMessagePacket
 import net.azisaba.api.server.plugins.authSimple
@@ -27,7 +26,6 @@ import net.azisaba.interchat.api.text.KanaTranslator
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.format.NamedTextColor
 import java.time.Duration
-import java.util.*
 import java.util.concurrent.CompletionException
 
 @Serializable
@@ -268,15 +266,15 @@ class Stream : WebSocketRequestHandler() {
     @Serializable
     data class RolePacket(
         @SerialName("member")
-        @Serializable(UUIDSerializer::class)
-        val memberUUID: UUID,
+        val memberName: String,
         @SerialName("role")
         val roleString: String,
     ) : Packet {
         override suspend fun handle(connection: ConnectedSocket) {
             val self = InterChatApi.guildManager.getMember(connection.getSelectedGuildId(), connection.uuid!!).join()
-            val user = InterChatApi.userManager.fetchUser(memberUUID).join()
-            val member = InterChatApi.guildManager.getMember(connection.getSelectedGuildId(), memberUUID).join()
+            // resolve uuid
+            val user = InterChatApi.getUserByName(connection, memberName) ?: return
+            val member = InterChatApi.guildManager.getMember(connection.getSelectedGuildId(), user.id()).join()
             val role = GuildRole.valueOf(roleString.uppercase())
             if (self.role() != GuildRole.OWNER) {
                 // member must be owner

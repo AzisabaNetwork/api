@@ -19,7 +19,6 @@ import net.kyori.adventure.text.format.NamedTextColor
 import net.kyori.adventure.text.format.TextDecoration
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer
 import java.util.*
-import java.util.concurrent.atomic.AtomicLong
 
 @Suppress("SqlNoDataSourceInspection", "SqlResolve")
 object InterChatPacketListener : PacketListener {
