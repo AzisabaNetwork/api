@@ -57,7 +57,6 @@ fun Application.appModule() {
         allowHeader(HttpHeaders.ContentType)
     }
 
-    DatabaseManager // Make connections to database
     configureSecurity()
     configureRouting()
     configureSerialization()
