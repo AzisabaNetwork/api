@@ -11,6 +11,7 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import net.azisaba.api.server.interchat.*
 import net.azisaba.api.server.interchat.protocol.OutgoingErrorMessagePacket
+import net.azisaba.api.server.interchat.protocol.OutgoingGuildPacket
 import net.azisaba.api.server.plugins.authSimple
 import net.azisaba.api.server.resources.WebSocketRequestHandler
 import net.azisaba.api.server.util.DurationUtil
@@ -69,6 +70,7 @@ class Stream : WebSocketRequestHandler() {
                     )
                 }
                 connection.uuid = principal.player
+                connection.sendPacket(OutgoingGuildPacket(connection.getSelectedGuildId()))
             }
         }
     }
@@ -123,6 +125,7 @@ class Stream : WebSocketRequestHandler() {
                 ps.setString(2, connection.uuid.toString())
                 ps.executeUpdate()
             }
+            connection.sendPacket(OutgoingGuildPacket(guildId))
         }
     }
 
@@ -132,6 +135,7 @@ class Stream : WebSocketRequestHandler() {
         override suspend fun handle(connection: ConnectedSocket) {
             connection.server = server
             UserDataProviderImpl.requestDataAsync(connection.uuid!!, server)
+            connection.sendPacket(OutgoingGuildPacket(connection.getSelectedGuildId()))
         }
     }
 
