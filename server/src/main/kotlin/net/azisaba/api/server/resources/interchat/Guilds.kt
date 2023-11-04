@@ -37,30 +37,4 @@ class Guilds {
             )
         }
     }
-
-    @Serializable
-    @Resource("members")
-    data class Members(val parent: Guilds, val id: Long): RequestHandler() {
-        override suspend fun PipelineContext<Unit, ApplicationCall>.handleRequest() {
-            val uuid = call.authentication.principal<APIKeyPrincipal>()?.player ?: return run {
-                call.respondJson(mapOf("error" to "not found"), status = HttpStatusCode.NotFound)
-            }
-            try {
-                val members = InterChatApi.guildManager.getMembers(id).join()
-                if (members.all { it.uuid() != uuid }) {
-                    return call.respondJson(mapOf("error" to "not found"), status = HttpStatusCode.NotFound)
-                }
-                call.respondJson(members.map {
-                    mapOf(
-                        "guild_id" to it.guildId(),
-                        "uuid" to it.uuid(),
-                        "role" to it.role().name,
-                        "nickname" to it.nickname(),
-                    )
-                })
-            } catch (e: Exception) {
-                return call.respondJson(mapOf("error" to "not found"), status = HttpStatusCode.NotFound)
-            }
-        }
-    }
 }
