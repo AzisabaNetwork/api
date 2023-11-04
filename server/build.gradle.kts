@@ -37,7 +37,7 @@ dependencies {
     implementation("io.ktor:ktor-client-cio-jvm:2.3.5")
     implementation("ch.qos.logback:logback-classic:$logbackVersion")
     implementation("redis.clients:jedis:4.2.3")
-    implementation("net.azisaba.interchat:api:2.6.0")
+    implementation("net.azisaba.interchat:api:2.7.0-SNAPSHOT")
     implementation("net.kyori:adventure-api:$adventureVersion")
     implementation("net.kyori:adventure-text-serializer-legacy:$adventureVersion")
     implementation("net.kyori:adventure-text-serializer-gson:$adventureVersion")

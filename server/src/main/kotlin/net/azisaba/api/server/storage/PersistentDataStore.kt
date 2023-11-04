@@ -55,7 +55,11 @@ object PersistentDataStore {
         getListContainerOrNull() ?: PersistentListDataContainer(List::class.java as Class<List<T>>, T::class.java).also { containers.add(it) }
 
     fun save() {
-        path.copyTo(path.resolve("../${path.name}.bak"), true)
+        try {
+            path.copyTo(path.resolve("../${path.name}.bak"), true)
+        } catch (e: Exception) {
+            Logger.currentLogger.error("Failed to save backup of persistent data", e)
+        }
         val array = JsonArray(containers.map { JSON.encodeToJsonElement(it.asSerialized()) })
         path.writeText(JSON.encodeToString(array))
     }
