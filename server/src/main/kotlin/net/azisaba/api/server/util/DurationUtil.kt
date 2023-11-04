@@ -37,26 +37,26 @@ object DurationUtil {
         var newDuration = duration
         var str = ""
         if (newDuration.toDays() > 0) {
-            str += if (newDuration.seconds > 1) {
-                "${newDuration.seconds}日"
+            str += if (newDuration.toDays() > 1) {
+                "${newDuration.toDays()}日"
             } else {
-                "${newDuration.seconds}日"
+                "${newDuration.toDays()}日"
             }
             newDuration = newDuration.minusDays(newDuration.toDays())
         }
         if (newDuration.toHours() > 0) {
-            str += if (newDuration.seconds > 1) {
-                "${newDuration.seconds}時間"
+            str += if (newDuration.toHours() > 1) {
+                "${newDuration.toHours()}時間"
             } else {
-                "${newDuration.seconds}時間"
+                "${newDuration.toHours()}時間"
             }
             newDuration = newDuration.minusHours(newDuration.toHours())
         }
         if (newDuration.toMinutes() > 0) {
-            str += if (newDuration.seconds > 1) {
-                "${newDuration.seconds}分"
+            str += if (newDuration.toMinutes() > 1) {
+                "${newDuration.toMinutes()}分"
             } else {
-                "${newDuration.seconds}分"
+                "${newDuration.toMinutes()}分"
             }
             newDuration = newDuration.minusMinutes(newDuration.toMinutes())
         }
