@@ -10,6 +10,7 @@ import net.azisaba.api.server.auth.APIKeyPrincipal
 import net.azisaba.api.server.interchat.InterChatApi
 import net.azisaba.api.server.resources.RequestHandler
 import net.azisaba.api.server.resources.respondJson
+import net.azisaba.api.server.schemas.SpicyAzisaBan
 
 @Serializable
 @Resource("/interchat/guilds/{id}")
@@ -30,6 +31,7 @@ data class IdentifiedGuilds(val id: Long) {
                     mapOf(
                         "guild_id" to it.guildId(),
                         "uuid" to it.uuid().toString(),
+                        "name" to SpicyAzisaBan.Players.getUsernameById(it.uuid()),
                         "role" to it.role().name,
                         "nickname" to it.nickname(),
                     )
