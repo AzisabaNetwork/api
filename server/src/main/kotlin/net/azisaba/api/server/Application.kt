@@ -43,7 +43,6 @@ fun Application.appModule() {
     InterChatProviderProvider.register(InterChatApi)
 
     TaskScheduler
-    PersistentDataStore // Load persistent data
     install(WebSockets) {
         pingPeriod = Duration.ofSeconds(15)
         timeout = Duration.ofSeconds(15)
