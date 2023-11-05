@@ -14,6 +14,7 @@ import net.azisaba.interchat.api.user.User
 import net.azisaba.interchat.api.user.UserManager
 import net.azisaba.interchat.api.util.QueryExecutor
 import net.azisaba.interchat.api.util.SQLThrowableConsumer
+import org.intellij.lang.annotations.Language
 import java.sql.PreparedStatement
 import java.sql.SQLException
 import java.sql.Statement
@@ -37,7 +38,7 @@ object InterChatApi : InterChat {
     private val guildManager = SQLGuildManager(queryExecutor)
     private val userManager = SQLUserManager(queryExecutor)
 
-    inline fun <R> querySql(sql: String, action: (PreparedStatement) -> R) =
+    inline fun <R> querySql(@Language("SQL") sql: String, action: (PreparedStatement) -> R) =
         dataSource.connection.use { conn -> conn.prepareStatement(sql).use { action(it) } }
 
     override fun getLogger(): Logger = Logger.getCurrentLogger()

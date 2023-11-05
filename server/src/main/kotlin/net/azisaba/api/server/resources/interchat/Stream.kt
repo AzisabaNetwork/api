@@ -383,4 +383,33 @@ class Stream : WebSocketRequestHandler() {
             }
         }
     }
+
+    @SerialName("format")
+    @Serializable
+    data class FormatPacket(val format: String) : Packet {
+        private val playerNameVariables = setOf("%playername", "%username", "%username-n")
+
+        override suspend fun handle(connection: ConnectedSocket) {
+            if (!format.contains("%msg") || playerNameVariables.none { format.contains(it) }) {
+                connection.sendPacket(OutgoingErrorMessagePacket("formatには%msgと、%playername/%username/%username-nのいずれかを含める必要があります。"))
+                return
+            }
+            val self = InterChatApi.guildManager.getMember(connection.getSelectedGuildId(), connection.uuid!!).join()
+            if (GuildRole.MODERATOR < self.role()) {
+                connection.sendPacket(OutgoingErrorMessagePacket("Missing permissions"))
+                return
+            }
+            InterChatApi.querySql("UPDATE `guilds` SET `format` = ? WHERE `id` = ?") { ps ->
+                ps.setString(1, format)
+                ps.setLong(2, connection.getSelectedGuildId())
+                ps.executeUpdate()
+            }
+            connection.sendFeedback(Component.text("チャット形式を変更しました: $format", NamedTextColor.GREEN))
+            InterChatApi.submitLog(
+                connection.getSelectedGuildId(),
+                InterChatApi.userManager.fetchUser(connection.uuid!!).join(),
+                "Set format to $format"
+            )
+        }
+    }
 }
