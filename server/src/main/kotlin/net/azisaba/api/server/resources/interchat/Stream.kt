@@ -225,7 +225,7 @@ class Stream : WebSocketRequestHandler() {
                 val actor = InterChatApi.userManager.fetchUser(connection.uuid!!).join()
                 InterChatApi.submitLog(guild.id(), actor, "Accepted the invite from " + invite.actor() + " (" + actor.name() + ") and joined the guild")
             } else {
-                connection.sendMessage("${guild.name()}の招待を却下しました。")
+                connection.sendFeedback(Component.text("${guild.name()}の招待を却下しました。", NamedTextColor.GREEN))
             }
             Protocol.GUILD_INVITE_RESULT.send(
                 JedisBoxProvider.get().pubSubHandler,
@@ -245,7 +245,7 @@ class Stream : WebSocketRequestHandler() {
             }
             val member = InterChatApi.guildManager.getMember(selectedGuild, connection.uuid!!).join()
             GuildMember(member.guildId(), member.uuid(), member.role(), nickname, member.hiddenByMember()).update().join()
-            connection.sendMessage("ニックネームを設定しました。($nickname)")
+            connection.sendFeedback(Component.text("ニックネームを設定しました。($nickname)", NamedTextColor.GREEN))
         }
     }
 
@@ -259,9 +259,9 @@ class Stream : WebSocketRequestHandler() {
                 ps.executeUpdate()
             }
             if (doTranslate) {
-                connection.sendMessage("かな変換をオンにしました。")
+                connection.sendFeedback(Component.text("かな変換をオンにしました。", NamedTextColor.GREEN))
             } else {
-                connection.sendMessage("かな変換をオフにしました。")
+                connection.sendFeedback(Component.text("かな変換をオフにしました。", NamedTextColor.GREEN))
             }
         }
     }
@@ -294,7 +294,7 @@ class Stream : WebSocketRequestHandler() {
                 }
             }
             member.update(role).join()
-            connection.sendMessage(Component.text("${user.name()}の権限を${roleString}に設定しました。", NamedTextColor.GREEN))
+            connection.sendFeedback(Component.text("${user.name()}の権限を${roleString}に設定しました。", NamedTextColor.GREEN))
         }
     }
 
@@ -310,10 +310,10 @@ class Stream : WebSocketRequestHandler() {
             }
             if (self.acceptingInvites()) {
                 // now false
-                connection.sendMessage(Component.text("招待を受け取らない設定にしました。", NamedTextColor.GREEN))
+                connection.sendFeedback(Component.text("招待を受け取らない設定にしました。", NamedTextColor.GREEN))
             } else {
                 // now true
-                connection.sendMessage(Component.text("招待を受け取る設定にしました。", NamedTextColor.GREEN))
+                connection.sendFeedback(Component.text("招待を受け取る設定にしました。", NamedTextColor.GREEN))
             }
         }
     }
@@ -327,10 +327,10 @@ class Stream : WebSocketRequestHandler() {
             GuildMember(self.guildId(), self.uuid(), self.role(), self.nickname(), !self.hiddenByMember()).update().join()
             if (self.hiddenByMember()) {
                 // now unhidden
-                connection.sendMessage(Component.text("${guild.name()}のHide設定を解除しました。", NamedTextColor.GREEN))
+                connection.sendFeedback(Component.text("${guild.name()}のHide設定を解除しました。", NamedTextColor.GREEN))
             } else {
                 // now hidden
-                connection.sendMessage(Component.text("${guild.name()}をHideしました。", NamedTextColor.GREEN))
+                connection.sendFeedback(Component.text("${guild.name()}をHideしました。", NamedTextColor.GREEN))
             }
         }
     }
@@ -377,9 +377,9 @@ class Stream : WebSocketRequestHandler() {
                 ps.executeUpdate()
             }
             if (duration.isZero) {
-                connection.sendMessage(Component.text("HideAllを無効にしました。", NamedTextColor.GREEN))
+                connection.sendFeedback(Component.text("HideAllを無効にしました。", NamedTextColor.GREEN))
             } else {
-                connection.sendMessage(Component.text("HideAllを${DurationUtil.convertDurationToString(duration)}の間有効にしました。", NamedTextColor.GREEN))
+                connection.sendFeedback(Component.text("HideAllを${DurationUtil.convertDurationToString(duration)}の間有効にしました。", NamedTextColor.GREEN))
             }
         }
     }
