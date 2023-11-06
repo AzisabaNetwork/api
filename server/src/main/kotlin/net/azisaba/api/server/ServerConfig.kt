@@ -13,7 +13,6 @@ import java.io.File
 
 @Serializable
 data class ServerConfig(
-    val hypixelApiKey: String = "",
     val database: DatabaseConfig = DatabaseConfig(),
     val redis: RedisConfig = RedisConfig(),
 ) {
