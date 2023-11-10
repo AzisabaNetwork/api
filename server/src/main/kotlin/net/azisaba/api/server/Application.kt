@@ -51,8 +51,15 @@ fun Application.appModule() {
     install(Resources)
     install(CallLogging)
     install(CORS) {
-        anyHost()
+        allowMethod(HttpMethod.Get)
+        allowMethod(HttpMethod.Post)
+        allowMethod(HttpMethod.Patch)
+        allowMethod(HttpMethod.Delete)
+        allowMethod(HttpMethod.Head)
+        allowMethod(HttpMethod.Options)
         allowHeader(HttpHeaders.ContentType)
+        allowHeader(HttpHeaders.Authorization)
+        anyHost()
     }
 
     configureSecurity()
