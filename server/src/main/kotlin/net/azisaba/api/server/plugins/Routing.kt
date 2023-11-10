@@ -35,6 +35,7 @@ fun Application.configureRouting() {
         authenticate("punishments") {
             get<Players.Id.Punishments>() // /players/{uuid}/punishments
             get<Punishments.Id>() // /punishments/{id}
+            get<Punishments.Search>() // /punishments/search
         }
     }
 }
