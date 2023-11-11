@@ -191,8 +191,13 @@ class Players {
         @Resource("punishments")
         data class Punishments(val parent: ByName): RequestHandler() {
             override suspend fun PipelineContext<Unit, ApplicationCall>.handleRequest() {
+                val id = SpicyAzisaBan.Players.getIdByUsername(parent.name)
+                    ?: return call.respondJson(
+                        mapOf("error" to "player not found"),
+                        status = HttpStatusCode.NotFound,
+                    )
                 val map = transaction(DatabaseManager.spicyAzisaBan) {
-                    SpicyAzisaBan.PunishmentHistory.find(SpicyAzisaBan.PunishmentHistoryTable.name eq parent.name)
+                    SpicyAzisaBan.PunishmentHistory.find(SpicyAzisaBan.PunishmentHistoryTable.target eq id.toString())
                         .map { it.toMap() }
                 }
                 call.respondJson(map)
