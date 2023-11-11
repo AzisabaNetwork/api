@@ -18,16 +18,23 @@ import net.azisaba.api.server.plugins.configureSerialization
 import net.azisaba.interchat.api.InterChatProviderProvider
 import org.slf4j.LoggerFactory
 import java.time.Duration
+import kotlin.system.exitProcess
 
 fun main() {
     ServerConfig // load configuration
-    embeddedServer(
-        Netty,
-        port = 8080,
-        host = "0.0.0.0",
-        watchPaths = listOf("classes"),
-        module = Application::appModule
-    ).start(wait = true)
+    try {
+        embeddedServer(
+            Netty,
+            port = 8080,
+            host = "0.0.0.0",
+            watchPaths = listOf("classes"),
+            module = Application::appModule
+        ).start(wait = true)
+    } catch (e: Throwable) {
+        System.err.println("Failed to start server")
+        e.printStackTrace()
+        exitProcess(1)
+    }
 
     InterChatApi.dataSource.close()
     JedisBoxProvider.get().close()

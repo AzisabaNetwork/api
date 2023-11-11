@@ -186,5 +186,17 @@ class Players {
                 )
             call.respondJson(Id.toMap(id, name))
         }
+
+        @Serializable
+        @Resource("punishments")
+        data class Punishments(val parent: ByName): RequestHandler() {
+            override suspend fun PipelineContext<Unit, ApplicationCall>.handleRequest() {
+                val map = transaction(DatabaseManager.spicyAzisaBan) {
+                    SpicyAzisaBan.PunishmentHistory.find(SpicyAzisaBan.PunishmentHistoryTable.name eq parent.name)
+                        .map { it.toMap() }
+                }
+                call.respondJson(map)
+            }
+        }
     }
 }

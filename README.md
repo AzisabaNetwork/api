@@ -1,5 +1,7 @@
 # API (Ktor implementation)
 
+Warning: this page is outdated
+
 ## Server
 
 Rate limit is 120 requests per minute.

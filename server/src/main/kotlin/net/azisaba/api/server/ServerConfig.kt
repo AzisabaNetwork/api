@@ -13,6 +13,8 @@ import java.io.File
 
 @Serializable
 data class ServerConfig(
+    @SerialName("openai-api-key")
+    val openAIApiKey: String = "",
     val database: DatabaseConfig = DatabaseConfig(),
     val redis: RedisConfig = RedisConfig(),
 ) {

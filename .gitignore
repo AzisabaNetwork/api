@@ -38,3 +38,4 @@ out/
 /config.yml
 /persistent-data.json
 /persistent-data.json.bak
+/punishments.json
