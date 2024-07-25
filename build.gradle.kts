@@ -2,9 +2,9 @@ val kotlinVersion: String by project
 val exposedVersion: String by project
 
 plugins {
-    kotlin("jvm") version "1.9.10"
-    id("org.jetbrains.kotlin.plugin.serialization") version "1.9.10"
-    id("com.github.johnrengelman.shadow") version "7.1.2"
+    kotlin("jvm") version "2.0.0"
+    id("org.jetbrains.kotlin.plugin.serialization") version "2.0.0"
+    id("com.github.johnrengelman.shadow") version "8.1.1"
     `java-library`
 }
 
