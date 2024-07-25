@@ -34,7 +34,7 @@ private const val showServers = false
 
 @Serializable
 @Resource("/counts")
-object Counts : RequestHandler() {
+object RouteCounts : RequestHandler() {
     override suspend fun PipelineContext<Unit, ApplicationCall>.handleRequest() {
         val players = RedisManager.getPlayers()
         val nonNullPlayers = players.filter { it.childServer != null }

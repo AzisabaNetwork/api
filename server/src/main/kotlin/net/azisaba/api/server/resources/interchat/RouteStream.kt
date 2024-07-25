@@ -31,7 +31,7 @@ import java.util.concurrent.CompletionException
 
 @Serializable
 @Resource("/interchat/stream")
-class Stream : WebSocketRequestHandler() {
+class RouteStream : WebSocketRequestHandler() {
     override suspend fun DefaultWebSocketServerSession.handleRequest() {
         val server = call.request.queryParameters["server"] ?: run {
             return close(CloseReason(CloseReason.Codes.GOING_AWAY, "server parameter must be specified"))

@@ -5,7 +5,10 @@ import io.ktor.server.auth.*
 import io.ktor.server.resources.*
 import io.ktor.server.routing.*
 import io.ktor.server.websocket.*
-import net.azisaba.api.server.resources.*
+import net.azisaba.api.server.resources.RequestHandler
+import net.azisaba.api.server.resources.WebSocketRequestHandler
+import net.azisaba.api.server.resources.handle
+import net.azisaba.api.server.resources.respondJson
 
 fun Application.configureRouting() {
     routing {
@@ -18,25 +21,25 @@ fun Application.configureRouting() {
         }
 
         // websocket does not support authentication
-        webSocket<net.azisaba.api.server.resources.interchat.Stream>("/interchat/stream")
+        webSocket<net.azisaba.api.server.resources.interchat.RouteStream>("/interchat/stream")
 
         authenticate("api-key") {
-            get<Counts>() // /counts
-            get<Players.Id>() // /players/{uuid}
-            get<Players.ByName>() // /players/by-name/{uuid}
-            get<net.azisaba.api.server.resources.servers.life.Auctions>()
-            get<net.azisaba.api.server.resources.servers.life.Auctions.Id>()
-            get<net.azisaba.api.server.resources.servers.life.Spawners>()
-            get<net.azisaba.api.server.resources.interchat.Guilds.List>()
-            get<net.azisaba.api.server.resources.interchat.IdentifiedGuilds.Members>()
-            get<net.azisaba.api.server.resources.interchat.UserData>()
+            get<net.azisaba.api.server.resources.RouteCounts>() // /counts
+            get<net.azisaba.api.server.resources.RoutePlayers.Id>() // /players/{uuid}
+            get<net.azisaba.api.server.resources.RoutePlayers.ByName>() // /players/by-name/{uuid}
+            get<net.azisaba.api.server.resources.servers.life.RouteAuctions>()
+            get<net.azisaba.api.server.resources.servers.life.RouteAuctions.Id>()
+            get<net.azisaba.api.server.resources.servers.life.RouteSpawners>()
+            get<net.azisaba.api.server.resources.interchat.RouteGuilds.List>()
+            get<net.azisaba.api.server.resources.interchat.RouteIdentifiedGuilds.Members>()
+            get<net.azisaba.api.server.resources.interchat.RouteUserData>()
         }
 
         authenticate("punishments") {
-            get<Players.Id.Punishments>() // /players/{uuid}/punishments
-            get<Players.ByName.Punishments>() // /players/by-name/{uuid}/punishments
-            get<Punishments.Id>() // /punishments/{id}
-            get<Punishments.Search>() // /punishments/search
+            get<net.azisaba.api.server.resources.RoutePlayers.Id.Punishments>() // /players/{uuid}/punishments
+            get<net.azisaba.api.server.resources.RoutePlayers.ByName.Punishments>() // /players/by-name/{uuid}/punishments
+            get<net.azisaba.api.server.resources.punishments.RouteId>() // /punishments/{id}
+            get<net.azisaba.api.server.resources.punishments.RouteSearch>() // /punishments/search
         }
     }
 }

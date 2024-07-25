@@ -17,12 +17,12 @@ import java.util.UUID
 
 @Serializable
 @Resource("/players")
-class Players {
+class RoutePlayers {
     @Serializable
     @Resource("{uuid}")
     data class Id(
         @Suppress("unused")
-        val parent: Players,
+        val parent: RoutePlayers,
         @Serializable(with = UUIDSerializer::class)
         val uuid: UUID,
     ): RequestHandler() {
@@ -177,7 +177,7 @@ class Players {
 
     @Serializable
     @Resource("by-name/{name}")
-    data class ByName(val parent: Players, val name: String): RequestHandler() {
+    data class ByName(val parent: RoutePlayers, val name: String): RequestHandler() {
         override suspend fun PipelineContext<Unit, ApplicationCall>.handleRequest() {
             val id = SpicyAzisaBan.Players.getIdByUsername(name)
                 ?: return call.respondJson(

@@ -14,10 +14,10 @@ import net.azisaba.api.server.resources.respondJson
 @Suppress("unused")
 @Serializable
 @Resource("/interchat/guilds")
-class Guilds {
+class RouteGuilds {
     @Serializable
     @Resource("list")
-    data class List(val parent: Guilds) : RequestHandler() {
+    data class List(val parent: RouteGuilds) : RequestHandler() {
         override suspend fun PipelineContext<Unit, ApplicationCall>.handleRequest() {
             val uuid = call.authentication.principal<APIKeyPrincipal>()?.player ?: return run {
                 call.respondJson(mapOf("error" to "not found"), status = HttpStatusCode.NotFound)

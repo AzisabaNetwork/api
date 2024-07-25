@@ -1,13 +1,12 @@
 package net.azisaba.api.server
 
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import net.azisaba.api.Logger
-import net.azisaba.api.server.resources.Punishments
+import net.azisaba.api.server.resources.punishments.RouteSearch
 import net.azisaba.api.server.schemas.SpicyAzisaBan
 import net.azisaba.api.server.vector.RawTextVector
 import org.jetbrains.exposed.sql.transactions.transaction
@@ -15,7 +14,6 @@ import java.io.File
 import java.util.*
 import kotlin.concurrent.schedule
 import kotlin.time.Duration
-import kotlin.time.Duration.Companion.minutes
 
 object TaskScheduler : Timer("Async Task Scheduler", true) {
     init {
@@ -33,7 +31,7 @@ object TaskScheduler : Timer("Async Task Scheduler", true) {
                 runBlocking {
                     val list = transaction(DatabaseManager.spicyAzisaBan) {
                         SpicyAzisaBan.PunishmentHistory
-                            .find { SpicyAzisaBan.PunishmentHistoryTable.id notInList Punishments.Search.vectorDatabase.vectors.keys.map { it.toLong() } }
+                            .find { SpicyAzisaBan.PunishmentHistoryTable.id notInList RouteSearch.vectorDatabase.vectors.keys.map { it.toLong() } }
                             .toList()
                             .map {
                                 RawTextVector(
@@ -52,13 +50,13 @@ object TaskScheduler : Timer("Async Task Scheduler", true) {
                     }
                     var totalProcessed = 0
                     list.chunked(500).forEach { historyList ->
-                        val added = Punishments.Search.vectorDatabase.openAI.insertBulk(historyList)
+                        val added = RouteSearch.vectorDatabase.openAI.insertBulk(historyList)
                         totalProcessed += historyList.size
                         Logger.currentLogger.info(
                             "Processed $totalProcessed/${list.size} vectors (added ${added.size}/${historyList.size} vectors)"
                         )
                     }
-                    File("punishments.json").writeText(Json.encodeToString(Punishments.Search.vectorDatabase))
+                    File("punishments.json").writeText(Json.encodeToString(RouteSearch.vectorDatabase))
                     Logger.currentLogger.info("Saved punishments.json")
                 }
             } catch (e: Exception) {

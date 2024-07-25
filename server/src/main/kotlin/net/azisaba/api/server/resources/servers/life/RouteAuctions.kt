@@ -12,7 +12,7 @@ import net.azisaba.api.util.JSON
 
 @Serializable
 @Resource("/servers/life/auctions")
-class Auctions : RequestHandler() {
+class RouteAuctions : RequestHandler() {
     override suspend fun PipelineContext<Unit, ApplicationCall>.handleRequest() {
         val allAuctions = RedisManager.getAuctions()
         val includeExpired = call.parameters["includeExpired"]?.toBooleanStrictOrNull() ?: false
@@ -25,7 +25,7 @@ class Auctions : RequestHandler() {
 
     @Serializable
     @Resource("{id}")
-    data class Id(val parent: Auctions, val id: Long) : RequestHandler() {
+    data class Id(val parent: RouteAuctions, val id: Long) : RequestHandler() {
         override suspend fun PipelineContext<Unit, ApplicationCall>.handleRequest() {
             call.respondJson(JSON.encodeToJsonElement(RedisManager.getAuction(id)))
         }

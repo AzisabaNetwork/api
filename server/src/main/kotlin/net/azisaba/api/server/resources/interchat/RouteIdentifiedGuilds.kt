@@ -14,10 +14,10 @@ import net.azisaba.api.server.schemas.SpicyAzisaBan
 
 @Serializable
 @Resource("/interchat/guilds/{id}")
-data class IdentifiedGuilds(val id: Long) {
+data class RouteIdentifiedGuilds(val id: Long) {
     @Serializable
     @Resource("members")
-    data class Members(val parent: IdentifiedGuilds): RequestHandler() {
+    data class Members(val parent: RouteIdentifiedGuilds): RequestHandler() {
         override suspend fun PipelineContext<Unit, ApplicationCall>.handleRequest() {
             val uuid = call.authentication.principal<APIKeyPrincipal>()?.player ?: return run {
                 call.respondJson(mapOf("error" to "not found"), status = HttpStatusCode.NotFound)

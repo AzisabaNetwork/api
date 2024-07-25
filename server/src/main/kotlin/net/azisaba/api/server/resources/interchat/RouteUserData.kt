@@ -14,7 +14,7 @@ private val empty: Map<String, Map<String, String>> = mapOf("prefix" to emptyMap
 
 @Serializable
 @Resource("/interchat/userdata")
-class UserData : RequestHandler() {
+class RouteUserData : RequestHandler() {
     override suspend fun PipelineContext<Unit, ApplicationCall>.handleRequest() {
         val playerString = call.request.queryParameters["uuid"] ?: run {
             return call.respondJson(mapOf("error" to "uuid parameter must be specified"))

@@ -10,7 +10,7 @@ import net.azisaba.api.server.resources.respondJson
 
 @Serializable
 @Resource("/servers/life/spawners")
-class Spawners : RequestHandler() {
+class RouteSpawners : RequestHandler() {
     override suspend fun PipelineContext<Unit, ApplicationCall>.handleRequest() {
         val childServer = call.parameters["child_server"]
         call.respondJson(RedisManager.getSpawnerData("life", childServer).groupBy({ it.childServer }, { it.data }))
