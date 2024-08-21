@@ -23,6 +23,9 @@ fun Application.configureRouting() {
         // websocket does not support authentication
         webSocket<net.azisaba.api.server.resources.interchat.RouteStream>("/interchat/stream")
 
+        get<Store.Products>() // /store/products
+        get<Store.HighestSara>() // /store/players/{name}/highest_sara
+
         authenticate("api-key") {
             get<net.azisaba.api.server.resources.RouteCounts>() // /counts
             get<net.azisaba.api.server.resources.RoutePlayers.Id>() // /players/{uuid}
