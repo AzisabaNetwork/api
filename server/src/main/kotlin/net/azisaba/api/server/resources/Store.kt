@@ -25,6 +25,7 @@ class Store {
             val (products, saraProducts) = transaction(DatabaseManager.azisabaApi) {
                 AzisabaAPI.Product.all().map {
                     mapOf(
+                        "id" to it.id,
                         "name" to it.name,
                         "description" to it.description,
                         "price" to it.price,
@@ -35,6 +36,7 @@ class Store {
                 } to
                         AzisabaAPI.SaraProduct.all().map {
                             mapOf(
+                                "id" to it.id,
                                 "name" to it.name,
                                 "description" to it.description,
                                 "price" to it.price,
