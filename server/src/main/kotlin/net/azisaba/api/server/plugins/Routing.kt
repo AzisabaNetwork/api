@@ -2,7 +2,8 @@ package net.azisaba.api.server.plugins
 
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
-import io.ktor.server.resources.*
+import io.ktor.server.resources.get
+import io.ktor.server.resources.post
 import io.ktor.server.routing.*
 import io.ktor.server.websocket.*
 import net.azisaba.api.server.resources.RequestHandler
@@ -24,6 +25,7 @@ fun Application.configureRouting() {
         webSocket<net.azisaba.api.server.resources.interchat.RouteStream>("/interchat/stream")
 
         get<net.azisaba.api.server.resources.Store.Products>() // /store/products
+        post<net.azisaba.api.server.resources.Store.Pay>() // /store/pay
         get<net.azisaba.api.server.resources.Store.HighestSara>() // /store/players/{name}/highest_sara
 
         authenticate("api-key") {
@@ -48,6 +50,7 @@ fun Application.configureRouting() {
 }
 
 inline fun <reified T : RequestHandler> Route.get() = this.get<T> { this.handle(it) }
+inline fun <reified T : RequestHandler> Route.post() = this.post<T> { this.handle(it) }
 inline fun <reified T : WebSocketRequestHandler> Route.webSocket(path: String) = this.webSocket(path) { this.handle(T::class.java.getConstructor().newInstance()) }
 
 fun Route.getAllRoutes(): List<Route> {
