@@ -18,7 +18,6 @@ data class ServerConfig(
     val database: DatabaseConfig = DatabaseConfig(),
     val redis: RedisConfig = RedisConfig(),
     val stripe: StripeConfig = StripeConfig(),
-    val paypay: PayPayConfig = PayPayConfig(),
 ) {
     companion object {
         val instance: ServerConfig
@@ -144,13 +143,6 @@ data class RedisConfig(
 @Serializable
 data class StripeConfig(
     val secretKey: String = "",
-)
-
-@Serializable
-data class PayPayConfig(
-    val production: Boolean = false,
-    val apiKey: String = "",
-    val apiSecretKey: String = "",
-    val merchantId: String = "",
+    val webhookSecret: String = "",
     val discordNotifyUrl: String = "",
 )

@@ -41,14 +41,20 @@ object PersistentDataStore {
 
     @Suppress("UNCHECKED_CAST")
     inline fun <reified T : Any> getContainerOrNull() =
-        containers.find { it.type == T::class.java } as PersistentDataContainer<T>?
+        containers.find { it.type.name == T::class.java.name } as PersistentDataContainer<T>?
 
     inline fun <reified T : Any> getContainer() =
         getContainerOrNull() ?: PersistentDataContainer(T::class.java).also { containers.add(it) }
 
     @Suppress("UNCHECKED_CAST")
     inline fun <reified T : Any> getListContainerOrNull() =
-        containers.find { it.type == T::class.java } as PersistentListDataContainer<T>?
+        containers.find {
+            if (it is PersistentListDataContainer<*>) {
+                it.trueType.name == T::class.java.name
+            } else {
+                false
+            }
+        } as PersistentListDataContainer<T>?
 
     @Suppress("UNCHECKED_CAST")
     inline fun <reified T : Any> getListContainer() =

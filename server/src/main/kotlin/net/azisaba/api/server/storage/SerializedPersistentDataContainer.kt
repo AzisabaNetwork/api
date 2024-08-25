@@ -43,7 +43,8 @@ data class SerializedPersistentListDataContainer(
     @OptIn(InternalSerializationApi::class)
     override fun asPersistentDataContainer(): IPersistentDataContainer<Any> {
         val serializer = Class.forName(serializerType).kotlin.serializerOrNull()
-            ?: Util.runNoinline { Class.forName(serializerType.substring(0, serializerType.length - "$\$serializer".length)).kotlin.serializer() }
+            ?: Util.runNoinline { Class.forName(serializerType.substringBefore("$\$serializer")).kotlin.serializerOrNull() }
+            ?: Class.forName(type).kotlin.serializer()
             as kotlinx.serialization.KSerializer<Any>
         val newData = data.mapValues { (_, value) -> value.map { JSON.decodeFromString(serializer, it) } }.toMutableMap()
         return PersistentListDataContainer(

@@ -13,7 +13,7 @@ import java.util.UUID
 
 object RedisManager {
     private val log = LoggerFactory.getLogger(RedisManager::class.java)
-    private val pool: JedisPool = ServerConfig.instance.redis.createPool()
+    val pool: JedisPool = ServerConfig.instance.redis.createPool()
 
     /**
      * Returns a list of all players.

@@ -15,6 +15,7 @@ import net.azisaba.api.server.interchat.JedisBoxProvider
 import net.azisaba.api.server.plugins.configureRouting
 import net.azisaba.api.server.plugins.configureSecurity
 import net.azisaba.api.server.plugins.configureSerialization
+import net.azisaba.api.server.storage.PersistentDataStore
 import net.azisaba.interchat.api.InterChatProviderProvider
 import org.slf4j.LoggerFactory
 import java.time.Duration
@@ -22,6 +23,7 @@ import kotlin.system.exitProcess
 
 fun main() {
     ServerConfig // load configuration
+    PersistentDataStore // load data store
     try {
         embeddedServer(
             Netty,

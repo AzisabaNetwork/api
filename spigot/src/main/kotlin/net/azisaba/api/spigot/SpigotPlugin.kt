@@ -44,6 +44,8 @@ class SpigotPlugin : JavaPlugin() {
     }
 
     override fun onDisable() {
+        RedisManager.subscriberThread.shutdownNow()
+        RedisManager.pingThread.shutdownNow()
         RedisManager.pool.destroy()
     }
 }

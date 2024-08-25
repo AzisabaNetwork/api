@@ -33,6 +33,7 @@ object AzisabaAPI {
         val imageUrl = varchar("image_url", 1000)
         val tags = varchar("tags", 1000)
         val hidden = bool("hidden")
+        val priceId = varchar("price_id", 128)
     }
 
     class Product(id: EntityID<Long>) : LongEntity(id) {
@@ -44,6 +45,7 @@ object AzisabaAPI {
         var imageUrl by ProductsTable.imageUrl
         var tags by ProductsTable.tags
         var hidden by ProductsTable.hidden
+        var priceId by ProductsTable.priceId
     }
 
     object SaraProductsTable : LongIdTable("sara_products") {
@@ -52,6 +54,7 @@ object AzisabaAPI {
         val price = integer("price")
         val imageUrl = varchar("image_url", 1000)
         val hidden = bool("hidden")
+        val productId = varchar("product_id", 128)
     }
 
     class SaraProduct(id: EntityID<Long>) : LongEntity(id) {
@@ -62,5 +65,6 @@ object AzisabaAPI {
         var price by SaraProductsTable.price
         var imageUrl by SaraProductsTable.imageUrl
         var hidden by SaraProductsTable.hidden
+        var productId by SaraProductsTable.productId
     }
 }

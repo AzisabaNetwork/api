@@ -26,6 +26,7 @@ fun Application.configureRouting() {
 
         get<net.azisaba.api.server.resources.Store.Products>() // /store/products
         post<net.azisaba.api.server.resources.Store.Pay>() // /store/pay
+        post<net.azisaba.api.server.resources.Store.Webhook>() // /store/webhook
         get<net.azisaba.api.server.resources.Store.HighestSara>() // /store/players/{name}/highest_sara
 
         authenticate("api-key") {

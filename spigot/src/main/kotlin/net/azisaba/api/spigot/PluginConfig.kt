@@ -18,6 +18,7 @@ data class PluginConfig(
     val paths: FilePaths = FilePaths(),
     val mythicMobs: MythicMobs = MythicMobs(),
     val redis: RedisConfig = RedisConfig(),
+    val purchaseCommands: List<PurchaseCommand> = listOf(PurchaseCommand(saraProductPrice = Int.MAX_VALUE))
 //    val database: DatabaseConfig = DatabaseConfig(),
 ) {
     companion object {
@@ -134,3 +135,10 @@ data class RedisConfig(
         }
     }
 }
+
+@Serializable
+data class PurchaseCommand(
+    val command: List<String> = listOf("tell <player> Thank you for your purchase!"),
+    val productId: Long? = Long.MAX_VALUE,
+    val saraProductPrice: Int? = null,
+)
