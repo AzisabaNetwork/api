@@ -178,10 +178,12 @@ class Store {
                     var uuid: UUID? = null
                     PersistentDataStore.getListContainer<IProduct>().data["session_${stripeObject.id}"]?.forEach { prod ->
                         uuid = prod.uuid
-                        jedis.publish(
-                            "azisaba-api:store:purchase-item",
-                            JSON.encodeToString(IProduct.serializer(), prod)
-                        )
+                        if (!ServerConfig.instance.stripe.testMode) {
+                            jedis.publish(
+                                "azisaba-api:store:purchase-item",
+                                JSON.encodeToString(IProduct.serializer(), prod)
+                            )
+                        }
                     }
                     if (uuid != null) {
                         jedis.publish(

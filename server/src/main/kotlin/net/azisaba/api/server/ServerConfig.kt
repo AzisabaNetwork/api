@@ -142,6 +142,7 @@ data class RedisConfig(
 
 @Serializable
 data class StripeConfig(
+    val testMode: Boolean = true,
     val secretKey: String = "",
     val webhookSecret: String = "",
     val discordNotifyUrl: String = "",
