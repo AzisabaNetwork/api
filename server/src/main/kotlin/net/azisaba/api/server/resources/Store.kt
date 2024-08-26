@@ -84,7 +84,7 @@ class Store {
                     it.permission.substringAfter("group.").substringAfter("hide")
                 }
                 if (groups.isEmpty()) return@transaction false
-                return@transaction groups.any { it == "gamingsara" || it == "togglegamingsara" }
+                return@transaction groups.any { it == "gamingsara" || it == "changegamingsara" }
             }
         }
     }
@@ -141,11 +141,11 @@ class Store {
             }
             // flatten products (merge multiple product A's into one)
             val productMap = productsToBuy.groupBy { it["price_id"] as String }.mapValues { it.value.size.toLong() }
-            val saraPrice = validSaraProducts.first()["price"] as Int
-            val session = StripeUtil.createCheckoutSession(referer, productMap, validSaraProducts.first()["product_id"] as String, saraPrice, highestSara)
+            val saraPrice = validSaraProducts.firstOrNull()?.get("price") as Int?
+            val session = StripeUtil.createCheckoutSession(referer, productMap, validSaraProducts.firstOrNull()?.get("product_id") as String?, saraPrice, highestSara)
             val persistentData = mutableListOf<IProduct>()
             persistentData += productsToBuy.map { Product(uuid, it["id"] as Long) }
-            if (saraProductsToBuy.isNotEmpty()) {
+            if (saraPrice != null) {
                 persistentData += SaraProduct(uuid, saraPrice)
             }
             PersistentDataStore.getListContainer<IProduct>().data["session_${session.id}"] = persistentData
