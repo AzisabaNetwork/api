@@ -67,15 +67,24 @@ class Store {
         }
 
         fun getHighestSara(name: String): Int? {
-            val uuid = transaction(DatabaseManager.spicyAzisaBan) {
-                SpicyAzisaBan.Players.getIdByUsername(name) ?: UUID(0, 0)
-            }
+            val uuid = SpicyAzisaBan.Players.getIdByUsername(name) ?: UUID(0, 0)
             return transaction(DatabaseManager.luckPerms) {
                 val groups = LuckPerms.UserPermissions.getGroupsForPlayer(uuid).map {
                     it.permission.substringAfter("group.").substringAfter("hide").substringBefore("yen")
                 }
                 if (groups.isEmpty()) return@transaction null
                 groups.firstOrNull { it in ranks }?.toInt() ?: return@transaction 0
+            }
+        }
+
+        fun hasGamingSara(name: String): Boolean {
+            val uuid = SpicyAzisaBan.Players.getIdByUsername(name) ?: UUID(0, 0)
+            return transaction(DatabaseManager.luckPerms) {
+                val groups = LuckPerms.UserPermissions.getGroupsForPlayer(uuid).map {
+                    it.permission.substringAfter("group.").substringAfter("hide")
+                }
+                if (groups.isEmpty()) return@transaction false
+                return@transaction groups.any { it == "gamingsara" || it == "togglegamingsara" }
             }
         }
     }
@@ -110,15 +119,16 @@ class Store {
             }
             val body = JSON.parseToJsonElement(call.receiveText()).jsonObject
             val name = body["name"]!!.jsonPrimitive.content
-            val uuid = transaction(DatabaseManager.spicyAzisaBan) {
-                SpicyAzisaBan.Players.getIdByUsername(name)
-            }
+            val uuid = SpicyAzisaBan.Players.getIdByUsername(name)
             if (uuid == null) {
                 return call.respondJson(mapOf("error" to "name_not_found"), status = HttpStatusCode.BadRequest)
             }
             val highestSara = getHighestSara(name) ?: return call.respondJson(mapOf("error" to "name_not_found"), status = HttpStatusCode.BadRequest)
             val (products, saraProducts) = getAllProducts()
             val receivedProductIds = body["products"]!!.jsonArray.map { it.jsonPrimitive.long }
+            if (receivedProductIds.contains(ServerConfig.instance.stripe.gamingSaraId) && hasGamingSara(name)) {
+                return call.respondJson(mapOf("error" to "already_has_gaming_sara"), status = HttpStatusCode.BadRequest)
+            }
             val receivedSaraProductIds = body["sara_products"]!!.jsonArray.map { it.jsonPrimitive.long }
             val productsToBuy = products.filter { it["id"] in receivedProductIds }
             val saraProductsToBuy = saraProducts.filter { it["id"] in receivedSaraProductIds }
@@ -186,6 +196,7 @@ class Store {
                         }
                     }
                     if (uuid != null) {
+                        Util.sendDiscordWebhookAsync(ServerConfig.instance.stripe.discordNotifyUrl, null, "プレイヤーUUID: $uuid")
                         jedis.publish(
                             "azisaba-api:store:purchase",
                             JSON.encodeToString(PurchaseData(uuid, stripeObject.amountTotal))
@@ -205,7 +216,7 @@ class Store {
         val name: String,
     ): RequestHandler() {
         override suspend fun PipelineContext<Unit, ApplicationCall>.handleRequest() {
-            call.respondJson(mapOf("highest_sara" to getHighestSara(name)))
+            call.respondJson(mapOf("highest_sara" to getHighestSara(name), "gaming_sara" to hasGamingSara(name)))
         }
     }
 }

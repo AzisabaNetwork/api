@@ -13,6 +13,7 @@ object StripeUtil {
             SessionCreateParams.Builder()
                 .setSuccessUrl(successUrl)
                 .setMode(SessionCreateParams.Mode.PAYMENT)
+                .setAllowPromotionCodes(true)
                 .apply {
                     products.forEach { (productId, quantity) ->
                         addLineItem(

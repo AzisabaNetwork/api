@@ -40,3 +40,4 @@ out/
 /persistent-data.json.bak
 /punishments.json
 /interchat.yml
+.kotlin/

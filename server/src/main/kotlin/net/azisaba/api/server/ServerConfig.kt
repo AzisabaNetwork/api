@@ -146,4 +146,5 @@ data class StripeConfig(
     val secretKey: String = "",
     val webhookSecret: String = "",
     val discordNotifyUrl: String = "",
+    val gamingSaraId: Long = -1L,
 )
