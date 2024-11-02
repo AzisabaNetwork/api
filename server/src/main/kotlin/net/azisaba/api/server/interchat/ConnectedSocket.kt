@@ -12,6 +12,11 @@ import java.util.UUID
 
 @Suppress("SqlResolve", "SqlNoDataSourceInspection")
 data class ConnectedSocket(var uuid: UUID?, var server: String, val connection: DefaultWebSocketSession) {
+    /**
+     * Sends packet to the connected socket
+     * @param packet Packet to send
+     * @return If the packet was sent successfully
+     */
     suspend fun sendPacket(packet: OutgoingPacket): Boolean =
         try {
             connection.send(JSON.encodeToString(packet))

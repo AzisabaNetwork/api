@@ -16,16 +16,24 @@ import net.azisaba.api.server.plugins.authSimple
 import net.azisaba.api.server.resources.WebSocketRequestHandler
 import net.azisaba.api.server.util.DurationUtil
 import net.azisaba.api.util.JSON
+import net.azisaba.interchat.api.data.PlayerPosData
+import net.azisaba.interchat.api.data.SenderInfo
 import net.azisaba.interchat.api.guild.GuildInviteResult
 import net.azisaba.interchat.api.guild.GuildMember
 import net.azisaba.interchat.api.guild.GuildRole
 import net.azisaba.interchat.api.network.Protocol
+import net.azisaba.interchat.api.network.RedisKeys
 import net.azisaba.interchat.api.network.protocol.GuildInvitePacket
 import net.azisaba.interchat.api.network.protocol.GuildInviteResultPacket
 import net.azisaba.interchat.api.network.protocol.GuildMessagePacket
+import net.azisaba.interchat.api.network.protocol.PrivateMessagePacket
 import net.azisaba.interchat.api.text.KanaTranslator
+import net.azisaba.interchat.api.text.MessageFormatter
 import net.kyori.adventure.text.Component
+import net.kyori.adventure.text.event.ClickEvent
+import net.kyori.adventure.text.event.HoverEvent
 import net.kyori.adventure.text.format.NamedTextColor
+import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer
 import java.time.Duration
 import java.util.concurrent.CompletionException
 
@@ -410,6 +418,88 @@ class RouteStream : WebSocketRequestHandler() {
                 InterChatApi.userManager.fetchUser(connection.uuid!!).join(),
                 "Set format to $format"
             )
+        }
+    }
+
+    @SerialName("block")
+    @Serializable
+    data class BlockPacket(val player: String) : Packet {
+        override suspend fun handle(connection: ConnectedSocket) {
+            val user = InterChatApi.getUserByName(connection, player) ?: return
+            val blocked = InterChatApi.userManager.blockUser(connection.uuid!!, user.id()).join()
+            if (blocked) {
+                connection.sendFeedback(Component.text("${player}をブロックしました。", NamedTextColor.GREEN))
+            } else {
+                connection.sendPacket(OutgoingErrorMessagePacket("${player}は既にブロックされています。"))
+            }
+        }
+    }
+
+    @SerialName("unblock")
+    @Serializable
+    data class UnblockPacket(val player: String) : Packet {
+        override suspend fun handle(connection: ConnectedSocket) {
+            val user = InterChatApi.getUserByName(connection, player) ?: return
+            InterChatApi.userManager.unblockUser(connection.uuid!!, user.id()).join()
+            connection.sendFeedback(Component.text("${player}のブロックを解除しました。", NamedTextColor.GREEN))
+        }
+    }
+
+    @SerialName("tell")
+    @Serializable
+    data class TellPacket(val player: String, val message: String) : Packet {
+        override suspend fun handle(connection: ConnectedSocket) {
+            val user = InterChatApi.getUserByName(connection, player) ?: return
+            if (connection.uuid!! == user.id()) {
+                connection.sendPacket(OutgoingErrorMessagePacket("自分自身にメッセージを送信することはできません。"))
+                return
+            }
+            if (InterChatApi.userManager.isBlocked(connection.uuid!!, user.id()).join()) {
+                connection.sendPacket(OutgoingErrorMessagePacket("${player}をブロックしています。"))
+                return
+            }
+            val self = InterChatApi.userManager.fetchUser(connection.uuid!!).join()
+            var newMessage: String = message
+            val transliteratedMessage =
+                if (newMessage.startsWith("#")) {
+                    newMessage = newMessage.substring(1)
+                    null
+                } else {
+                    val translateKana = InterChatApi.userManager.fetchUser(connection.uuid!!).join().translateKana()
+                    if (translateKana) {
+                        val suggestions = withContext(Dispatchers.IO) {
+                            KanaTranslator.translateSync(newMessage)
+                        }
+                        if (suggestions.isNotEmpty()) {
+                            suggestions[0]
+                        } else {
+                            null
+                        }
+                    } else {
+                        null
+                    }
+                }
+            Protocol.PRIVATE_MESSAGE.send(
+                JedisBoxProvider.get().pubSubHandler,
+                PrivateMessagePacket(connection.uuid!!, user.id(), connection.server, message, transliteratedMessage)
+            )
+            val worldPos = try {
+                JedisBoxProvider.get().get(RedisKeys.azisabaReportPlayerPos(connection.uuid!!), PlayerPosData.NETWORK_CODEC).toWorldPos()
+            } catch (e: Exception) {
+                null
+            }
+            val info = SenderInfo(self, connection.server, null, worldPos)
+            val formatted = MessageFormatter.formatPrivateChat(
+                PrivateMessagePacket.FORMAT,
+                info,
+                user,
+                message,
+                transliteratedMessage,
+                emptyMap()
+            )
+            connection.sendFeedback(LegacyComponentSerializer.legacyAmpersand().deserialize(formatted)
+                .hoverEvent(HoverEvent.showText(Component.text("クリックでメッセージを書く")))
+                .clickEvent(ClickEvent.suggestCommand("/cguild tell $player ")))
         }
     }
 }
