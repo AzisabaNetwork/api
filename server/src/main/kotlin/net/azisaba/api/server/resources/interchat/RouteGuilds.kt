@@ -24,6 +24,7 @@ class RouteGuilds {
             }
             call.respondJson(
                 InterChatApi.guildManager.getGuildsOf(uuid).join()
+                    .filter { !it.deleted() }
                     .map { guild ->
                         mapOf(
                             "id" to guild.id(),
