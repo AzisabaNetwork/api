@@ -36,9 +36,12 @@ class RoutePlayers {
                         "life" to getLife(uuid),
                         "tsl" to getTSL(uuid),
                         "lgw" to getLGW(uuid),
+                        "lgw2" to getLGW2(uuid),
+                        "sclat" to getSclat(uuid),
                         "despawn" to getDespawn(uuid),
                         "diverse" to getDiverse(uuid),
                         "vanilife" to getVanilife(uuid),
+                        "afk" to getAfk(uuid),
                         "lobby" to getLobby(uuid),
                         "jg" to getJG(uuid),
                         "afnw2" to getAfnw2(uuid),
@@ -91,13 +94,23 @@ class RoutePlayers {
                 )
             }
 
+            private fun getLGW2(uuid: UUID): Map<String, Any> {
+                val groups = getGroups(uuid, "lgw2")
+                return getServerTemplate(groups) + mapOf(
+                    "vip" to groups.contains("vip"),
+                )
+            }
+
+            private fun getSclat(uuid: UUID): Map<String, Any> {
+                return getServerTemplate(uuid, "sclat")
+            }
+
             private fun getDespawn(uuid: UUID): Map<String, Any> {
                 return getServerTemplate(uuid, "despawn")
             }
 
             private fun getDiverse(uuid: UUID): Map<String, Any> {
                 return getServerTemplate(uuid, "diverse")
-                // exp, money, veteranpoint, title might be added in the future
             }
 
             private fun getVanilife(uuid: UUID): Map<String, Any> {
@@ -110,6 +123,10 @@ class RoutePlayers {
 
             private fun getAfnw2(uuid: UUID): Map<String, Any> {
                 return getServerTemplate(uuid, "afnw2")
+            }
+
+            private fun getAfk(uuid: UUID): Map<String, Any> {
+                return getServerTemplate(uuid, "afk")
             }
 
             private fun getLobby(uuid: UUID): Map<String, Any> {
