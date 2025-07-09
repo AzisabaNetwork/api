@@ -10,15 +10,18 @@ import net.azisaba.api.server.RedisManager
 // map of games for /counts
 private val games = mapOf(
     "life" to mapOf(
-        "life" to "life|liferesource".toRegex(),
-        "pve" to "lifetravel|lifeevent|lifepve.*".toRegex(),
+        "life" to "life(?:-\\d+)?".toRegex(),
+        "resource" to "liferesource(?:-\\d+)?".toRegex(),
+        "pve" to "lifetravel(?:-\\d+)?|lifeevent(?:-\\d+)?|lifepve.*".toRegex(),
         "other" to "life.*".toRegex(),
     ),
     "diverse" to "diverse(?!dev).*".toRegex(),
+    "sclat" to "sclat.*".toRegex(),
     "jg" to mapOf(
         "sclat" to "sclat.*".toRegex(),
         "jg" to "jg|jg1|jgdebug".toRegex(),
     ),
+    "lgw2" to "lgw2.*".toRegex(),
     "lgw" to "lgw.*".toRegex(),
     "pg" to "pg".toRegex(),
     "afnw" to "afnw\\d*".toRegex(),
