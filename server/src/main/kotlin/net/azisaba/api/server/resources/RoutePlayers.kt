@@ -201,7 +201,12 @@ class RoutePlayers {
                     mapOf("error" to "player not found"),
                     status = HttpStatusCode.NotFound,
                 )
-            call.respondJson(Id.toMap(id, name))
+            val realName = transaction(DatabaseManager.spicyAzisaBan) { SpicyAzisaBan.Players.getUsernameById(id) }
+                ?: return call.respondJson(
+                    mapOf("error" to "internal error"),
+                    status = HttpStatusCode.NotFound
+                )
+            call.respondJson(Id.toMap(id, realName))
         }
 
         @Serializable
