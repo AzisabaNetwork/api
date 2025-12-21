@@ -2,7 +2,6 @@ package net.azisaba.api.server.interchat
 
 import kotlinx.coroutines.runBlocking
 import net.azisaba.api.server.interchat.protocol.OutgoingComponentPacket
-import net.azisaba.api.server.interchat.protocol.OutgoingMessagePacket
 import net.azisaba.api.server.util.Util
 import net.azisaba.interchat.api.data.PlayerPosData
 import net.azisaba.interchat.api.data.SenderInfo
@@ -119,10 +118,7 @@ object InterChatPacketListener : PacketListener {
                 packet.transliteratedMessage(),
                 emptyMap(),
             )
-            val coloredText =
-                LegacyComponentSerializer.legacyAmpersand()
-                    .deserialize(formattedText)
-                    .let { LegacyComponentSerializer.legacySection().serialize(it) }
+            val coloredText = LegacyComponentSerializer.legacyAmpersand().deserialize(formattedText)
             val toRemove = sockets.parallelStream().filter { socket ->
                 if (members.any { m -> !m.hiddenByMember() && m.uuid() == socket.uuid }) {
                     try {
@@ -135,7 +131,7 @@ object InterChatPacketListener : PacketListener {
                     } catch (_: Exception) {
                     }
                     runBlocking {
-                        !socket.sendPacket(OutgoingMessagePacket(coloredText))
+                        !socket.sendPacket(OutgoingComponentPacket(coloredText))
                     }
                 } else {
                     false
