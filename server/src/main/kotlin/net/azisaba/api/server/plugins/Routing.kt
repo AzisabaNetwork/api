@@ -31,6 +31,7 @@ fun Application.configureRouting() {
 
         authenticate("api-key") {
             get<net.azisaba.api.server.resources.RouteCounts>() // /counts
+            get<net.azisaba.api.server.resources.RoutePlayers.Me>() // /players/me
             get<net.azisaba.api.server.resources.RoutePlayers.Id>() // /players/{uuid}
             get<net.azisaba.api.server.resources.RoutePlayers.ByName>() // /players/by-name/{uuid}
             get<net.azisaba.api.server.resources.servers.life.RouteAuctions>()
