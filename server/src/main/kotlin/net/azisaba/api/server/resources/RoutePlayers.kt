@@ -3,6 +3,7 @@ package net.azisaba.api.server.resources
 import io.ktor.http.*
 import io.ktor.resources.*
 import io.ktor.server.application.*
+import io.ktor.server.auth.authentication
 import io.ktor.util.pipeline.*
 import kotlinx.serialization.Serializable
 import net.azisaba.api.server.DatabaseManager
@@ -11,6 +12,8 @@ import net.azisaba.api.server.schemas.LifeStatz
 import net.azisaba.api.server.schemas.LuckPerms
 import net.azisaba.api.server.schemas.SpicyAzisaBan
 import net.azisaba.api.serializers.UUIDSerializer
+import net.azisaba.api.server.auth.APIKeyPrincipal
+import net.azisaba.api.server.resources.RoutePlayers.Id.Companion.toMap
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.transactions.transaction
 import java.util.UUID
@@ -224,6 +227,20 @@ class RoutePlayers {
                 }
                 call.respondJson(map)
             }
+        }
+    }
+
+    @Serializable
+    @Resource("me")
+    data class Me(val parent: RoutePlayers): RequestHandler() {
+        override suspend fun PipelineContext<Unit, ApplicationCall>.handleRequest() {
+            this.context.authentication.principal<APIKeyPrincipal>()?.let { principal ->
+                val username = transaction(DatabaseManager.spicyAzisaBan) { SpicyAzisaBan.Players.getUsernameById(principal.player) }
+                    ?: return call.respondJson(
+                        mapOf("error" to "player not found"),
+                        status = HttpStatusCode.NotFound
+                    )
+                call.respondJson(toMap(principal.player, username))            }
         }
     }
 }
