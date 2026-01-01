@@ -15,6 +15,8 @@ import java.io.File
 data class ServerConfig(
     @SerialName("openai-api-key")
     val openAIApiKey: String = "",
+    @SerialName("worker-scripts-api-key")
+    val workerScriptsApiKey: String = "",
     val database: DatabaseConfig = DatabaseConfig(),
     val redis: RedisConfig = RedisConfig(),
     val stripe: StripeConfig = StripeConfig(),

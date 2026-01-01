@@ -1,8 +1,22 @@
 package net.azisaba.api.server.interchat
 
+import io.ktor.client.HttpClient
+import io.ktor.client.engine.cio.CIO
+import io.ktor.client.request.header
+import io.ktor.client.request.post
+import io.ktor.client.request.setBody
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.JsonPrimitive
+import net.azisaba.api.server.ServerConfig
 import net.azisaba.api.server.interchat.protocol.OutgoingComponentPacket
+import net.azisaba.api.server.interchat.protocol.OutgoingWebGuildInvitePacket
+import net.azisaba.api.server.interchat.protocol.OutgoingWebGuildMessagePacket
 import net.azisaba.api.server.util.Util
+import net.azisaba.api.util.JSON
 import net.azisaba.interchat.api.data.PlayerPosData
 import net.azisaba.interchat.api.data.SenderInfo
 import net.azisaba.interchat.api.guild.GuildInviteResult
@@ -23,6 +37,7 @@ import java.util.stream.Collectors
 
 @Suppress("SqlNoDataSourceInspection", "SqlResolve")
 object InterChatPacketListener : PacketListener {
+    private val client = HttpClient(CIO)
     val sockets: MutableSet<ConnectedSocket> = Collections.synchronizedSet(LinkedHashSet())
     val getHideAllUntil = Util.memoize<UUID, Long>(10000) { uuid ->
         try {
@@ -101,6 +116,21 @@ object InterChatPacketListener : PacketListener {
             if (guild == null || user == null || guild.deleted()) {
                 return@collectAsync
             }
+            runBlocking {
+                withContext(Dispatchers.IO) {
+                    client.post("https://worker-scripts.azisaba.workers.dev/interchat/add_guild_message") {
+                        header("Authorization", "Bearer ${ServerConfig.instance.workerScriptsApiKey}")
+                        header("Content-Type", "application/json")
+                        setBody(JSON.encodeToString(JsonObject(mapOf(
+                            "guild_id" to JsonPrimitive(packet.guildId()),
+                            "server" to JsonPrimitive(packet.server()),
+                            "sender" to JsonPrimitive(packet.sender().toString()),
+                            "message" to JsonPrimitive(packet.message()),
+                            "transliterated_message" to JsonPrimitive(packet.transliteratedMessage()),
+                        ))))
+                    }
+                }
+            }
             val members = guild.members.join()
             val nickname = members.stream().filter { it.uuid() == user.id() }.findAny().map(GuildMember::nickname)
             val pos = try {
@@ -131,7 +161,20 @@ object InterChatPacketListener : PacketListener {
                     } catch (_: Exception) {
                     }
                     runBlocking {
-                        !socket.sendPacket(OutgoingComponentPacket(coloredText))
+                        val sent = if (socket.plainText) {
+                            socket.sendPacket(
+                                OutgoingWebGuildMessagePacket(
+                                    packet.guildId(),
+                                    packet.server(),
+                                    packet.sender(),
+                                    packet.message(),
+                                    packet.transliteratedMessage(),
+                                )
+                            )
+                        } else {
+                            socket.sendPacket(OutgoingComponentPacket(coloredText))
+                        }
+                        !sent
                     }
                 } else {
                     false
@@ -153,6 +196,21 @@ object InterChatPacketListener : PacketListener {
             val message = "§b${from.name()}§6が§b${to.name()}§6をギルド§b${guild.name()}§6に招待しました。招待は5分で期限切れになります。"
             runBlocking {
                 sockets.forEach { socket ->
+                    if (socket.plainText) {
+                        if (socket.uuid == to.id() || socket.uuid in members) {
+                            socket.sendPacket(
+                                OutgoingWebGuildInvitePacket(
+                                    guild.id(),
+                                    from.id(),
+                                    from.name(),
+                                    to.id(),
+                                    to.name(),
+                                    guild.name(),
+                                )
+                            )
+                        }
+                        return@forEach
+                    }
                     if (socket.uuid == to.id()) {
                         socket.sendMessage(Component.text("------------------------------", NamedTextColor.YELLOW))
                         socket.sendMessage("§b${from.name()}§6があなたをギルド§b${guild.name()}§6に招待しました。招待は5分で期限切れになります。")

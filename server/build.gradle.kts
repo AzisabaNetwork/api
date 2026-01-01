@@ -41,6 +41,7 @@ dependencies {
     implementation("net.kyori:adventure-api:$adventureVersion")
     implementation("net.kyori:adventure-text-serializer-legacy:$adventureVersion")
     implementation("net.kyori:adventure-text-serializer-gson:$adventureVersion")
+    implementation("net.kyori:adventure-text-serializer-plain:$adventureVersion")
     implementation("net.luckperms:api:5.4")
     implementation("cloud.unum:usearch:2.8.6")
     implementation("com.github.jelmerk:hnswlib-core:1.1.0")
