@@ -30,7 +30,7 @@ object TaskScheduler : Timer("Async Task Scheduler", true) {
             }
         }
 
-        schedule(1000 * 30) {
+        schedule(1000 * 30, 1000 * 30) {
             try {
                 InterChatPacketListener.sockets.forEach { socket ->
                     if (socket.uuid == null) return@forEach
