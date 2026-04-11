@@ -29,6 +29,7 @@ fun Application.configureRouting() {
         post<net.azisaba.api.server.resources.Store.Pay>() // /store/pay
         post<net.azisaba.api.server.resources.Store.Webhook>() // /store/webhook
         get<net.azisaba.api.server.resources.Store.HighestSara>() // /store/players/{name}/highest_sara
+        get<net.azisaba.api.server.resources.interchat.RouteImage>()
 
         authenticate("api-key") {
             get<net.azisaba.api.server.resources.RouteCounts>() // /counts
@@ -41,6 +42,7 @@ fun Application.configureRouting() {
             get<net.azisaba.api.server.resources.interchat.RouteGuilds.List>()
             get<net.azisaba.api.server.resources.interchat.RouteIdentifiedGuilds.Members>()
             get<net.azisaba.api.server.resources.interchat.RouteUserData>()
+            post<net.azisaba.api.server.resources.interchat.RouteUploadImage>()
         }
 
         authenticate("punishments") {
