@@ -19,6 +19,10 @@ object UploadLifeAuctionsFileTask : AbstractTask() {
         val start = System.currentTimeMillis()
         Logger.currentLogger.info("Updating life auctions data")
         val data = yaml.decodeFromStream(CAData.serializer(), file.inputStream())
+        if (data.items.isEmpty()) {
+            Logger.currentLogger.info("No life auctions data found. Skipped updating.")
+            return
+        }
         RedisManager.uploadAuctionData(*data.items.values.map {
             val stack = ItemStack.deserializeBytes(Base64.getDecoder().decode(it.itemBytes))
             val displayName = if (stack.hasItemMeta() && stack.itemMeta.hasDisplayName()) {
