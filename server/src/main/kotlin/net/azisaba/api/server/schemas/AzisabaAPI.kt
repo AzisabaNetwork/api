@@ -4,8 +4,18 @@ import org.jetbrains.exposed.dao.LongEntity
 import org.jetbrains.exposed.dao.LongEntityClass
 import org.jetbrains.exposed.dao.id.EntityID
 import org.jetbrains.exposed.dao.id.LongIdTable
+import org.jetbrains.exposed.sql.Table
 
 object AzisabaAPI {
+    object PlayerDataPrivacyTable : Table("player_data_privacy") {
+        val playerUUID = char("player_uuid", 36)
+        val shareInventory = bool("share_inventory").default(false)
+        val shareEnderChest = bool("share_enderchest").default(false)
+        val updatedAt = long("updated_at").default(0L)
+
+        override val primaryKey = PrimaryKey(playerUUID)
+    }
+
     object APIKeyTable : LongIdTable("api_keys") {
         val key = varchar("key", 64)
         val player = varchar("player", 36) // uuid

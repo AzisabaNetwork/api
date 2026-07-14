@@ -18,8 +18,8 @@ data class PluginConfig(
     val paths: FilePaths = FilePaths(),
     val mythicMobs: MythicMobs = MythicMobs(),
     val redis: RedisConfig = RedisConfig(),
-    val purchaseCommands: List<PurchaseCommand> = listOf(PurchaseCommand(saraProductPrice = Int.MAX_VALUE))
-//    val database: DatabaseConfig = DatabaseConfig(),
+    val purchaseCommands: List<PurchaseCommand> = listOf(PurchaseCommand(saraProductPrice = Int.MAX_VALUE)),
+    val database: SpigotDatabaseConfig = SpigotDatabaseConfig(),
 ) {
     companion object {
         lateinit var instance: PluginConfig
@@ -63,23 +63,17 @@ data class MythicMobs(
     ),
 )
 
-/*
 @SerialName("database")
 @Serializable
-data class DatabaseConfig(
-    @YamlComment(
-        "Driver class to use. Default is the bundled mariadb driver.",
-        "Set to null if you want to auto-detect the driver.",
-    )
-    val driver: String? = "net.azisaba.api.spigot.lib.org.mariadb.jdbc.Driver",
+data class SpigotDatabaseConfig(
     @YamlComment("Change to jdbc:mysql if you want to use MySQL instead of MariaDB")
     val scheme: String = "jdbc:mariadb",
     val hostname: String = "localhost",
-    @YamlComment("Database name to ues (must match with database.databaseNames.azisabaApi in api-ktor-server")
     val port: Int = 3306,
+    @YamlComment("Must match database.databaseNames.azisabaApi in api-ktor-server")
     val name: String = "azisaba_api",
     @YamlComment(
-        "Make sure the user has the SELECT, INSERT, CREATE, and ALTER permissions to the database!",
+        "The user needs SELECT, INSERT, and UPDATE on player_data_privacy.",
         "Using root is not recommended because it opens up a large security hole.",
     )
     val username: String = "azisaba_api",
@@ -97,19 +91,13 @@ data class DatabaseConfig(
         "maintainTimeStats" to "false",
     ),
 ) {
-    fun createDataSource(): HikariDataSource {
-        val config = HikariConfig()
-        if (driver != null) {
-            config.driverClassName = driver
-        }
-        config.jdbcUrl = "$scheme://$hostname:$port/$name"
-        config.username = username
-        config.password = password
-        config.dataSourceProperties = properties.toProperties()
-        return HikariDataSource(config)
+    fun connectionProperties() = properties.toProperties().apply {
+        setProperty("user", username)
+        setProperty("password", password)
     }
+
+    val jdbcUrl: String get() = "$scheme://$hostname:$port/$name"
 }
-*/
 
 @SerialName("redis")
 @Serializable

@@ -113,7 +113,7 @@ data class DatabaseNames(
     @YamlComment("Table prefix configured in LuckPerms.")
     val luckPermsTablePrefix: String = "luckperms_",
     val lifeStatz: String = "life_statz",
-    @YamlComment("Database of MPDB. Requires the SELECT privilege on mpdb_economy table.")
+    @YamlComment("Database of MPDB. Requires SELECT on mpdb_economy, mpdb_inventory, and mpdb_enderchest.")
     val lifeMpdb: String = "life_mpdb",
 )
 

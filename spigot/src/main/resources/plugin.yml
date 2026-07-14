@@ -4,3 +4,12 @@ main: net.azisaba.api.spigot.SpigotPlugin
 api-version: 1.15
 softdepend:
   - MythicMobs
+commands:
+  api-privacy:
+    description: API で共有するプレイヤーデータを設定します。
+    usage: /api-privacy
+    permission: azisabaapi.privacy
+permissions:
+  azisabaapi.privacy:
+    description: API のプライバシー設定を変更できます。
+    default: true

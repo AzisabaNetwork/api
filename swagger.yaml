@@ -8,6 +8,86 @@ servers:
   - url: https://api-ktor.azisaba.net
     description: Production server
 paths:
+  /players/{uuid}/inventory:
+    get:
+      summary: Returns a player's inventory and armor when sharing is allowed.
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/PlayerUuid"
+      responses:
+        '200':
+          description: Decoded inventory data
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PlayerInventory"
+        '403':
+          $ref: "#/components/responses/DataSharingDisabled"
+        '404':
+          $ref: "#/components/responses/PlayerDataNotFound"
+        '500':
+          $ref: "#/components/responses/InvalidStoredPlayerData"
+  /players/{uuid}/enderchest:
+    get:
+      summary: Returns a player's ender chest when sharing is allowed.
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/PlayerUuid"
+      responses:
+        '200':
+          description: Decoded ender chest data
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PlayerEnderChest"
+        '403':
+          $ref: "#/components/responses/DataSharingDisabled"
+        '404':
+          $ref: "#/components/responses/PlayerDataNotFound"
+        '500':
+          $ref: "#/components/responses/InvalidStoredPlayerData"
+  /players/by-name/{name}/inventory:
+    get:
+      summary: Returns a player's inventory and armor by player name.
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/PlayerName"
+      responses:
+        '200':
+          description: Decoded inventory data
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PlayerInventory"
+        '403':
+          $ref: "#/components/responses/DataSharingDisabled"
+        '404':
+          $ref: "#/components/responses/PlayerDataNotFound"
+        '500':
+          $ref: "#/components/responses/InvalidStoredPlayerData"
+  /players/by-name/{name}/enderchest:
+    get:
+      summary: Returns a player's ender chest by player name.
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/PlayerName"
+      responses:
+        '200':
+          description: Decoded ender chest data
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PlayerEnderChest"
+        '403':
+          $ref: "#/components/responses/DataSharingDisabled"
+        '404':
+          $ref: "#/components/responses/PlayerDataNotFound"
+        '500':
+          $ref: "#/components/responses/InvalidStoredPlayerData"
   /interchat/guilds/list:
     get:
       summary: Returns a list of joined guilds of authenticated user.
@@ -21,7 +101,101 @@ paths:
                 items:
                   $ref: "#/components/schemas/Guild"
 components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+  parameters:
+    PlayerUuid:
+      name: uuid
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    PlayerName:
+      name: name
+      in: path
+      required: true
+      schema:
+        type: string
+        maxLength: 16
+  responses:
+    DataSharingDisabled:
+      description: The player has not enabled sharing for this data.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+          example:
+            error: data_sharing_disabled
+    PlayerDataNotFound:
+      description: The player or requested MPDB data was not found.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+    InvalidStoredPlayerData:
+      description: The stored Base64 or uncompressed NBT payload could not be decoded.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+          example:
+            error: invalid_stored_player_data
   schemas:
+    Error:
+      type: object
+      required: [error]
+      properties:
+        error:
+          type: string
+    NbtTag:
+      type: object
+      description: A prismarine-nbt-style type-preserving tag. Long values are decimal strings.
+      required: [type, value]
+      properties:
+        type:
+          type: string
+          enum: [byte, short, int, long, float, double, byteArray, string, list, compound, intArray, longArray]
+        value:
+          description: Scalar, array, compound object, or a list descriptor containing its element type and values.
+    PlayerInventory:
+      type: object
+      required: [uuid, name, inventory, armor, hotbar_slot, gamemode, sync_complete, last_seen]
+      properties:
+        uuid:
+          type: string
+          format: uuid
+        name:
+          type: string
+        inventory:
+          $ref: "#/components/schemas/NbtTag"
+        armor:
+          $ref: "#/components/schemas/NbtTag"
+        hotbar_slot:
+          type: integer
+        gamemode:
+          type: integer
+        sync_complete:
+          type: string
+        last_seen:
+          type: string
+    PlayerEnderChest:
+      type: object
+      required: [uuid, name, enderchest, sync_complete, last_seen]
+      properties:
+        uuid:
+          type: string
+          format: uuid
+        name:
+          type: string
+        enderchest:
+          $ref: "#/components/schemas/NbtTag"
+        sync_complete:
+          type: string
+        last_seen:
+          type: string
     Guild:
       type: object
       properties:

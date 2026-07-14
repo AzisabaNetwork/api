@@ -36,6 +36,10 @@ fun Application.configureRouting() {
             get<net.azisaba.api.server.resources.RoutePlayers.Me>() // /players/me
             get<net.azisaba.api.server.resources.RoutePlayers.Id>() // /players/{uuid}
             get<net.azisaba.api.server.resources.RoutePlayers.ByName>() // /players/by-name/{uuid}
+            get<net.azisaba.api.server.resources.RoutePlayers.Id.Inventory>()
+            get<net.azisaba.api.server.resources.RoutePlayers.Id.EnderChest>()
+            get<net.azisaba.api.server.resources.RoutePlayers.ByName.Inventory>()
+            get<net.azisaba.api.server.resources.RoutePlayers.ByName.EnderChest>()
             get<net.azisaba.api.server.resources.servers.life.RouteAuctions>()
             get<net.azisaba.api.server.resources.servers.life.RouteAuctions.Id>()
             get<net.azisaba.api.server.resources.servers.life.RouteSpawners>()

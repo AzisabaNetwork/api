@@ -27,6 +27,7 @@ object DatabaseManager {
             SchemaUtils.create(AzisabaAPI.APIKeyTable)
             SchemaUtils.create(AzisabaAPI.ProductsTable)
             SchemaUtils.create(AzisabaAPI.SaraProductsTable)
+            SchemaUtils.create(AzisabaAPI.PlayerDataPrivacyTable)
         }
         transaction(spicyAzisaBan) { addLogger(Slf4jSqlDebugLogger) }
         transaction(luckPerms) { addLogger(Slf4jSqlDebugLogger) }

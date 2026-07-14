@@ -5,6 +5,7 @@ import net.azisaba.api.Logger.Companion.registerLogger
 import net.azisaba.api.spigot.common.mythic.MythicAPI
 import net.azisaba.api.spigot.tasks.UploadLifeAuctionsFileTask
 import net.azisaba.api.spigot.tasks.UploadMythicMobsTask
+import net.azisaba.api.spigot.privacy.PrivacyCommand
 import org.bukkit.plugin.java.JavaPlugin
 
 class SpigotPlugin : JavaPlugin() {
@@ -24,7 +25,10 @@ class SpigotPlugin : JavaPlugin() {
         logger.info("Connecting to Redis server")
         RedisManager
         //logger.info("Connecting to database")
-        //DatabaseManager
+        val privacyCommand = PrivacyCommand(this)
+        getCommand("api-privacy")?.setExecutor(privacyCommand)
+            ?: error("api-privacy command is not defined in plugin.yml")
+        server.pluginManager.registerEvents(privacyCommand, this)
 
         if (PluginConfig.instance.paths.lifeAuctions != null) {
             UploadLifeAuctionsFileTask.schedule(20 * 10, 20 * 60)

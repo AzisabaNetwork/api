@@ -11,10 +11,13 @@ import net.azisaba.api.server.schemas.LifeMpdb
 import net.azisaba.api.server.schemas.LifeStatz
 import net.azisaba.api.server.schemas.LuckPerms
 import net.azisaba.api.server.schemas.SpicyAzisaBan
+import net.azisaba.api.server.schemas.AzisabaAPI
 import net.azisaba.api.serializers.UUIDSerializer
 import net.azisaba.api.server.auth.APIKeyPrincipal
 import net.azisaba.api.server.resources.RoutePlayers.Id.Companion.toMap
+import net.azisaba.api.server.util.NbtJsonDecoder
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
+import org.jetbrains.exposed.sql.select
 import org.jetbrains.exposed.sql.transactions.transaction
 import java.util.UUID
 
@@ -193,6 +196,22 @@ class RoutePlayers {
                 call.respondJson(map)
             }
         }
+
+        @Serializable
+        @Resource("inventory")
+        data class Inventory(val parent: Id): RequestHandler() {
+            override suspend fun PipelineContext<Unit, ApplicationCall>.handleRequest() {
+                respondPlayerInventory(parent.uuid)
+            }
+        }
+
+        @Serializable
+        @Resource("enderchest")
+        data class EnderChest(val parent: Id): RequestHandler() {
+            override suspend fun PipelineContext<Unit, ApplicationCall>.handleRequest() {
+                respondPlayerEnderChest(parent.uuid)
+            }
+        }
     }
 
     @Serializable
@@ -228,6 +247,32 @@ class RoutePlayers {
                 call.respondJson(map)
             }
         }
+
+        @Serializable
+        @Resource("inventory")
+        data class Inventory(val parent: ByName): RequestHandler() {
+            override suspend fun PipelineContext<Unit, ApplicationCall>.handleRequest() {
+                val uuid = SpicyAzisaBan.Players.getIdByUsername(parent.name)
+                    ?: return call.respondJson(
+                        mapOf("error" to "player_not_found"),
+                        status = HttpStatusCode.NotFound,
+                    )
+                respondPlayerInventory(uuid)
+            }
+        }
+
+        @Serializable
+        @Resource("enderchest")
+        data class EnderChest(val parent: ByName): RequestHandler() {
+            override suspend fun PipelineContext<Unit, ApplicationCall>.handleRequest() {
+                val uuid = SpicyAzisaBan.Players.getIdByUsername(parent.name)
+                    ?: return call.respondJson(
+                        mapOf("error" to "player_not_found"),
+                        status = HttpStatusCode.NotFound,
+                    )
+                respondPlayerEnderChest(uuid)
+            }
+        }
     }
 
     @Serializable
@@ -243,4 +288,118 @@ class RoutePlayers {
                 call.respondJson(toMap(principal.player, username))            }
         }
     }
+}
+
+private enum class SharedPlayerData {
+    INVENTORY,
+    ENDER_CHEST,
+}
+
+internal fun canAccessPlayerData(caller: UUID, target: UUID, shared: Boolean?): Boolean =
+    caller == target || shared == true
+
+private fun PipelineContext<Unit, ApplicationCall>.mayAccessPlayerData(
+    target: UUID,
+    data: SharedPlayerData,
+): Boolean {
+    val caller = context.authentication.principal<APIKeyPrincipal>()?.player ?: return false
+    if (caller == target) return true
+
+    val shared = transaction(DatabaseManager.azisabaApi) {
+        AzisabaAPI.PlayerDataPrivacyTable
+            .select { AzisabaAPI.PlayerDataPrivacyTable.playerUUID eq target.toString() }
+            .firstOrNull()
+            ?.let {
+                when (data) {
+                    SharedPlayerData.INVENTORY -> it[AzisabaAPI.PlayerDataPrivacyTable.shareInventory]
+                    SharedPlayerData.ENDER_CHEST -> it[AzisabaAPI.PlayerDataPrivacyTable.shareEnderChest]
+                }
+            }
+            ?: false
+    }
+    return canAccessPlayerData(caller, target, shared)
+}
+
+private suspend fun PipelineContext<Unit, ApplicationCall>.respondPlayerInventory(uuid: UUID) {
+    if (!mayAccessPlayerData(uuid, SharedPlayerData.INVENTORY)) {
+        return call.respondJson(
+            mapOf("error" to "data_sharing_disabled"),
+            status = HttpStatusCode.Forbidden,
+        )
+    }
+
+    val stored = transaction(DatabaseManager.lifeMpdb) {
+        LifeMpdb.Inventory.find(LifeMpdb.InventoryTable.playerUUID eq uuid.toString()).firstOrNull()
+    } ?: return call.respondJson(
+        mapOf("error" to "inventory_data_not_found"),
+        status = HttpStatusCode.NotFound,
+    )
+
+    val inventory = try {
+        NbtJsonDecoder.decode(stored.inventory)
+    } catch (e: Exception) {
+        call.application.log.error("Could not decode MPDB inventory for player {}", uuid, e)
+        return call.respondJson(
+            mapOf("error" to "invalid_stored_player_data"),
+            status = HttpStatusCode.InternalServerError,
+        )
+    }
+    val armor = try {
+        NbtJsonDecoder.decode(stored.armor)
+    } catch (e: Exception) {
+        call.application.log.error("Could not decode MPDB armor for player {}", uuid, e)
+        return call.respondJson(
+            mapOf("error" to "invalid_stored_player_data"),
+            status = HttpStatusCode.InternalServerError,
+        )
+    }
+
+    call.respondJson(
+        mapOf(
+            "uuid" to uuid.toString(),
+            "name" to stored.playerName,
+            "inventory" to inventory,
+            "armor" to armor,
+            "hotbar_slot" to stored.hotbarSlot,
+            "gamemode" to stored.gamemode,
+            "sync_complete" to stored.syncComplete,
+            "last_seen" to stored.lastSeen,
+        )
+    )
+}
+
+private suspend fun PipelineContext<Unit, ApplicationCall>.respondPlayerEnderChest(uuid: UUID) {
+    if (!mayAccessPlayerData(uuid, SharedPlayerData.ENDER_CHEST)) {
+        return call.respondJson(
+            mapOf("error" to "data_sharing_disabled"),
+            status = HttpStatusCode.Forbidden,
+        )
+    }
+
+    val stored = transaction(DatabaseManager.lifeMpdb) {
+        LifeMpdb.EnderChest.find(LifeMpdb.EnderChestTable.playerUUID eq uuid.toString()).firstOrNull()
+    } ?: return call.respondJson(
+        mapOf("error" to "enderchest_data_not_found"),
+        status = HttpStatusCode.NotFound,
+    )
+
+    val enderChest = try {
+        NbtJsonDecoder.decode(stored.enderChest)
+    } catch (e: Exception) {
+        call.application.log.error("Could not decode MPDB ender chest for player {}", uuid, e)
+        return call.respondJson(
+            mapOf("error" to "invalid_stored_player_data"),
+            status = HttpStatusCode.InternalServerError,
+        )
+    }
+
+    call.respondJson(
+        mapOf(
+            "uuid" to uuid.toString(),
+            "name" to stored.playerName,
+            "enderchest" to enderChest,
+            "sync_complete" to stored.syncComplete,
+            "last_seen" to stored.lastSeen,
+        )
+    )
 }
