@@ -1,5 +1,6 @@
 package net.azisaba.api.server.resources
 
+import net.azisaba.api.server.players.canAccessPlayerData
 import java.util.UUID
 import kotlin.test.Test
 import kotlin.test.assertFalse

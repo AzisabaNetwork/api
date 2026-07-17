@@ -10,8 +10,13 @@ import net.azisaba.api.server.resources.RequestHandler
 import net.azisaba.api.server.resources.WebSocketRequestHandler
 import net.azisaba.api.server.resources.handle
 import net.azisaba.api.server.resources.respondJson
+import net.azisaba.api.server.players.ExposedPlayerRepository
+import net.azisaba.api.server.players.PlayerService
+import net.azisaba.api.server.players.registerPlayerPunishmentRoutes
+import net.azisaba.api.server.players.registerPlayerRoutes
 
 fun Application.configureRouting() {
+    val playerService = PlayerService(ExposedPlayerRepository())
     routing {
         get("/") {
             call.respondJson(
@@ -33,13 +38,7 @@ fun Application.configureRouting() {
 
         authenticate("api-key") {
             get<net.azisaba.api.server.resources.RouteCounts>() // /counts
-            get<net.azisaba.api.server.resources.RoutePlayers.Me>() // /players/me
-            get<net.azisaba.api.server.resources.RoutePlayers.Id>() // /players/{uuid}
-            get<net.azisaba.api.server.resources.RoutePlayers.ByName>() // /players/by-name/{uuid}
-            get<net.azisaba.api.server.resources.RoutePlayers.Id.Inventory>()
-            get<net.azisaba.api.server.resources.RoutePlayers.Id.EnderChest>()
-            get<net.azisaba.api.server.resources.RoutePlayers.ByName.Inventory>()
-            get<net.azisaba.api.server.resources.RoutePlayers.ByName.EnderChest>()
+            registerPlayerRoutes(playerService)
             get<net.azisaba.api.server.resources.servers.life.RouteAuctions>()
             get<net.azisaba.api.server.resources.servers.life.RouteAuctions.Id>()
             get<net.azisaba.api.server.resources.servers.life.RouteSpawners>()
@@ -50,8 +49,7 @@ fun Application.configureRouting() {
         }
 
         authenticate("punishments") {
-            get<net.azisaba.api.server.resources.RoutePlayers.Id.Punishments>() // /players/{uuid}/punishments
-            get<net.azisaba.api.server.resources.RoutePlayers.ByName.Punishments>() // /players/by-name/{uuid}/punishments
+            registerPlayerPunishmentRoutes(playerService)
             get<net.azisaba.api.server.resources.punishments.RouteId>() // /punishments/{id}
             get<net.azisaba.api.server.resources.punishments.RouteSearch>() // /punishments/search
         }
