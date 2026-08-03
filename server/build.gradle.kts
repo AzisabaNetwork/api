@@ -46,7 +46,6 @@ dependencies {
     implementation("net.luckperms:api:5.4")
     implementation("cloud.unum:usearch:2.8.6")
     implementation("com.github.jelmerk:hnswlib-core:1.1.0")
-    implementation("com.stripe:stripe-java:26.7.0")
     testImplementation("io.ktor:ktor-server-tests-jvm:$ktorVersion")
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit:$kotlinVersion")
 }

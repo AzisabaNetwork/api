@@ -31,3 +31,19 @@ data class PurchaseData(
     val uuid: UUID,
     val amount: Long,
 )
+
+@Serializable
+data class StorePurchaseItemV2(
+    val orderId: String,
+    val deliveryId: String,
+    val product: IProduct,
+)
+
+@Serializable
+data class PurchaseAnnouncementV2(
+    val orderId: String,
+    val deliveryId: String,
+    @Serializable(with = UUIDSerializer::class)
+    val uuid: UUID,
+    val amount: Long,
+)

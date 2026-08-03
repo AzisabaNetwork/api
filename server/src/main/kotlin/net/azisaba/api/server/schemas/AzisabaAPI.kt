@@ -67,6 +67,26 @@ object AzisabaAPI {
         val productId = varchar("product_id", 128)
     }
 
+    object StoreRequestsTable : Table("store_requests") {
+        val requestId = varchar("request_id", 64)
+        val createdAt = long("created_at")
+
+        override val primaryKey = PrimaryKey(requestId)
+    }
+
+    object StoreFulfillmentsTable : Table("store_fulfillments") {
+        val orderId = varchar("order_id", 64)
+        val payloadHash = char("payload_hash", 64)
+        val payload = text("payload")
+        val status = varchar("status", 32).default("pending")
+        val attempts = integer("attempts").default(0)
+        val lastError = text("last_error").nullable()
+        val createdAt = long("created_at")
+        val updatedAt = long("updated_at")
+
+        override val primaryKey = PrimaryKey(orderId)
+    }
+
     class SaraProduct(id: EntityID<Long>) : LongEntity(id) {
         companion object : LongEntityClass<SaraProduct>(SaraProductsTable)
 

@@ -4,8 +4,10 @@ import net.azisaba.api.Logger
 import net.azisaba.api.data.AuctionInfo
 import net.azisaba.api.data.IProduct
 import net.azisaba.api.data.Product
+import net.azisaba.api.data.PurchaseAnnouncementV2
 import net.azisaba.api.data.PurchaseData
 import net.azisaba.api.data.SaraProduct
+import net.azisaba.api.data.StorePurchaseItemV2
 import net.azisaba.api.util.JSON
 import net.md_5.bungee.api.chat.ClickEvent
 import net.md_5.bungee.api.chat.TextComponent
@@ -63,10 +65,27 @@ object RedisManager : Listener {
                             } else if (channel == "azisaba-api:store:purchase-item") {
                                 val data = JSON.decodeFromString<IProduct>(message)
                                 queuePurchase(data)
+                            } else if (channel == "azisaba-api:store:purchase:v2") {
+                                val data = JSON.decodeFromString<PurchaseAnnouncementV2>(message)
+                                if (!pendingPurchases.recordOnce(data.deliveryId)) return
+                                val player = Bukkit.getOfflinePlayer(data.uuid)
+                                Bukkit.broadcastMessage("§a§l${player.name}さんが§d§l${data.amount}円§a§l寄付しました！")
+                                Bukkit.broadcastMessage("§a§l${player.name}さんありがとうございます！")
+                                val text = TextComponent("§6§l${player.name}さんのように寄付するにはこのメッセージをクリック！")
+                                text.clickEvent = ClickEvent(ClickEvent.Action.OPEN_URL, "https://newstore.azisaba.net")
+                                Bukkit.spigot().broadcast(text)
+                            } else if (channel == "azisaba-api:store:purchase-item:v2") {
+                                queuePurchase(JSON.decodeFromString<StorePurchaseItemV2>(message))
                             }
                         }
                     }
-                    jedis.subscribe(listener, "azisaba-api:store:purchase", "azisaba-api:store:purchase-item")
+                    jedis.subscribe(
+                        listener,
+                        "azisaba-api:store:purchase",
+                        "azisaba-api:store:purchase-item",
+                        "azisaba-api:store:purchase:v2",
+                        "azisaba-api:store:purchase-item:v2",
+                    )
                 }
             } catch (e: JedisConnectionException) {
                 Logger.currentLogger.warn("Could not subscribe", e)
@@ -103,6 +122,21 @@ object RedisManager : Listener {
         })
     }
 
+    private fun queuePurchase(delivery: StorePurchaseItemV2) {
+        try {
+            if (!pendingPurchases.addDelivery(delivery)) return
+        } catch (e: Exception) {
+            Logger.currentLogger.error(
+                "Failed to save store delivery ${delivery.deliveryId} for ${delivery.product.uuid}",
+                e,
+            )
+            return
+        }
+        Bukkit.getScheduler().runTask(SpigotPlugin.instance, Runnable {
+            Bukkit.getPlayer(delivery.product.uuid)?.takeIf { it.isOnline }?.let(::processPendingPurchases)
+        })
+    }
+
     private fun processPendingPurchases(player: Player) {
         val products = try {
             pendingPurchases.get(player.uniqueId)
@@ -110,7 +144,13 @@ object RedisManager : Listener {
             Logger.currentLogger.error("Failed to load pending purchases for ${player.uniqueId}", e)
             return
         }
-        if (products.isEmpty()) return
+        val deliveries = try {
+            pendingPurchases.getDeliveries(player.uniqueId)
+        } catch (e: Exception) {
+            Logger.currentLogger.error("Failed to load pending store deliveries for ${player.uniqueId}", e)
+            return
+        }
+        if (products.isEmpty() && deliveries.isEmpty()) return
 
         val config = try {
             PluginConfig.readCurrentConfig(SpigotPlugin.instance.dataFolder.toPath())
@@ -143,9 +183,34 @@ object RedisManager : Listener {
                 Logger.currentLogger.error("Failed to grant pending purchase $product", e)
             }
         }
+        val processedDeliveries = mutableListOf<StorePurchaseItemV2>()
+        deliveries.forEach { delivery ->
+            val product = delivery.product
+            val purchaseCommand = when (product) {
+                is Product -> config.purchaseCommands.find { it.productId == product.id }
+                is SaraProduct -> config.purchaseCommands.find { it.saraProductPrice == product.amount }
+            }
+            if (purchaseCommand == null) {
+                Logger.currentLogger.warn("No purchase command is configured for store delivery ${delivery.deliveryId}")
+                return@forEach
+            }
+            try {
+                purchaseCommand.command.forEach { command ->
+                    Bukkit.dispatchCommand(
+                        Bukkit.getConsoleSender(),
+                        command.replace("<player>", player.name)
+                            .replace("<uuid>", player.uniqueId.toString()),
+                    )
+                }
+                processedDeliveries += delivery
+            } catch (e: Exception) {
+                Logger.currentLogger.error("Failed to grant store delivery ${delivery.deliveryId}", e)
+            }
+        }
 
         try {
             pendingPurchases.remove(processed)
+            pendingPurchases.completeDeliveries(processedDeliveries)
         } catch (e: Exception) {
             Logger.currentLogger.error("Failed to remove granted purchases for ${player.uniqueId}", e)
         }

@@ -28,6 +28,8 @@ object DatabaseManager {
             SchemaUtils.create(AzisabaAPI.ProductsTable)
             SchemaUtils.create(AzisabaAPI.SaraProductsTable)
             SchemaUtils.create(AzisabaAPI.PlayerDataPrivacyTable)
+            SchemaUtils.create(AzisabaAPI.StoreRequestsTable)
+            SchemaUtils.create(AzisabaAPI.StoreFulfillmentsTable)
         }
         transaction(spicyAzisaBan) { addLogger(Slf4jSqlDebugLogger) }
         transaction(luckPerms) { addLogger(Slf4jSqlDebugLogger) }

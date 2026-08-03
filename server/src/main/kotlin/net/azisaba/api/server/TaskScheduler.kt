@@ -10,6 +10,7 @@ import net.azisaba.api.server.interchat.InterChatPacketListener
 import net.azisaba.api.server.interchat.JedisBoxProvider
 import net.azisaba.api.server.resources.punishments.RouteSearch
 import net.azisaba.api.server.schemas.SpicyAzisaBan
+import net.azisaba.api.server.store.StoreFulfillmentOutbox
 import net.azisaba.api.server.vector.RawTextVector
 import net.azisaba.interchat.api.data.PlayerPresenceData
 import net.azisaba.interchat.api.network.RedisKeys
@@ -21,6 +22,14 @@ import kotlin.time.Duration
 
 object TaskScheduler : Timer("Async Task Scheduler", true) {
     init {
+        schedule(1000, 1000) {
+            try {
+                StoreFulfillmentOutbox.dispatchPending()
+            } catch (e: Exception) {
+                Logger.currentLogger.error("Error dispatching store fulfillments", e)
+            }
+        }
+
         // cache auctions every day
         schedule(1000 * 60, 1000 * 60 * 60 * 24) {
             try {

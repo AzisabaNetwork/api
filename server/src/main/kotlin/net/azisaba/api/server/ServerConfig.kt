@@ -2,6 +2,7 @@ package net.azisaba.api.server
 
 import com.charleskorn.kaml.Yaml
 import com.charleskorn.kaml.YamlComment
+import com.charleskorn.kaml.YamlConfiguration
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
 import kotlinx.serialization.SerialName
@@ -19,7 +20,8 @@ data class ServerConfig(
     val workerScriptsApiKey: String = "",
     val database: DatabaseConfig = DatabaseConfig(),
     val redis: RedisConfig = RedisConfig(),
-    val stripe: StripeConfig = StripeConfig(),
+    @SerialName("stripe")
+    val store: StoreConfig = StoreConfig(),
 ) {
     companion object {
         val instance: ServerConfig
@@ -31,7 +33,8 @@ data class ServerConfig(
                 println("Config file not found. Creating new one.")
                 configFile.writeText(Yaml.default.encodeToString(serializer(), ServerConfig()) + "\n")
             }
-            instance = Yaml.default.decodeFromStream(serializer(), configFile.inputStream())
+            instance = Yaml(configuration = YamlConfiguration(strictMode = false))
+                .decodeFromStream(serializer(), configFile.inputStream())
             if (java.lang.Boolean.getBoolean("net.azisaba.api.saveConfig")) {
                 println("Saving config to $configFile (absolute path: ${configFile.absolutePath})")
                 configFile.writeText(Yaml.default.encodeToString(serializer(), instance) + "\n")
@@ -143,10 +146,8 @@ data class RedisConfig(
 }
 
 @Serializable
-data class StripeConfig(
+data class StoreConfig(
     val testMode: Boolean = true,
-    val secretKey: String = "",
-    val webhookSecret: String = "",
     val discordNotifyUrl: String = "",
     val gamingSaraId: Long = -1L,
 )
