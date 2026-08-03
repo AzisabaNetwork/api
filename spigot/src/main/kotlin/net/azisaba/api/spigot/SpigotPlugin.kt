@@ -24,6 +24,7 @@ class SpigotPlugin : JavaPlugin() {
         PluginConfig.loadConfig(dataFolder.toPath())
         logger.info("Connecting to Redis server")
         RedisManager
+        server.pluginManager.registerEvents(RedisManager, this)
         //logger.info("Connecting to database")
         val privacyCommand = PrivacyCommand(this)
         getCommand("api-privacy")?.setExecutor(privacyCommand)

@@ -10,16 +10,23 @@ import net.azisaba.api.util.JSON
 import net.md_5.bungee.api.chat.ClickEvent
 import net.md_5.bungee.api.chat.TextComponent
 import org.bukkit.Bukkit
+import org.bukkit.entity.Player
+import org.bukkit.event.EventHandler
+import org.bukkit.event.Listener
+import org.bukkit.event.player.PlayerJoinEvent
 import redis.clients.jedis.JedisPool
 import redis.clients.jedis.JedisPubSub
 import redis.clients.jedis.exceptions.JedisConnectionException
 import java.util.concurrent.Executors
 
-object RedisManager {
+object RedisManager : Listener {
     var listener: JedisPubSub? = null
     val pool: JedisPool = PluginConfig.instance.redis.createPool()
-    val subscriberThread = Executors.newFixedThreadPool(1) {r -> Thread(r, "AzisabaAPI PubSub Subscriber Thread").apply { isDaemon = true } }
-    val pingThread = Executors.newFixedThreadPool(1) {r -> Thread(r, "AzisabaAPI PubSub Ping Thread").apply { isDaemon = true } }
+    val subscriberThread = Executors.newFixedThreadPool(1) {r -> Thread(r, "AzisabaAPI PubSub Subscriber Thread").apply { isDaemon = true } }!!
+    val pingThread = Executors.newFixedThreadPool(1) {r -> Thread(r, "AzisabaAPI PubSub Ping Thread").apply { isDaemon = true } }!!
+    private val pendingPurchases = PendingPurchaseStore(
+        SpigotPlugin.instance.dataFolder.toPath().resolve("pending-purchases.yml"),
+    )
 
     init {
         pool.resource.use { jedis -> jedis.ping() }
@@ -55,27 +62,7 @@ object RedisManager {
                                 Bukkit.spigot().broadcast(text)
                             } else if (channel == "azisaba-api:store:purchase-item") {
                                 val data = JSON.decodeFromString<IProduct>(message)
-                                val player = Bukkit.getOfflinePlayer(data.uuid)
-                                Bukkit.getScheduler().runTask(SpigotPlugin.instance, Runnable {
-                                    when (data) {
-                                        is Product -> {
-                                            PluginConfig.instance.purchaseCommands.find { it.productId == data.id }?.command?.forEach {
-                                                Bukkit.dispatchCommand(Bukkit.getConsoleSender(),
-                                                    it.replace("<player>", player.name ?: "null")
-                                                        .replace("<uuid>", data.uuid.toString())
-                                                )
-                                            }
-                                        }
-                                        is SaraProduct -> {
-                                            PluginConfig.instance.purchaseCommands.find { it.saraProductPrice == data.amount }?.command?.forEach {
-                                                Bukkit.dispatchCommand(Bukkit.getConsoleSender(),
-                                                    it.replace("<player>", player.name ?: "null")
-                                                        .replace("<uuid>", data.uuid.toString())
-                                                )
-                                            }
-                                        }
-                                    }
-                                })
+                                queuePurchase(data)
                             }
                         }
                     }
@@ -95,6 +82,72 @@ object RedisManager {
                     Thread.currentThread().interrupt()
                 }
             }
+        }
+    }
+
+    @EventHandler
+    fun onPlayerJoin(event: PlayerJoinEvent) {
+        processPendingPurchases(event.player)
+    }
+
+    private fun queuePurchase(product: IProduct) {
+        try {
+            pendingPurchases.add(product)
+        } catch (e: Exception) {
+            Logger.currentLogger.error("Failed to save a pending purchase for ${product.uuid}", e)
+            return
+        }
+
+        Bukkit.getScheduler().runTask(SpigotPlugin.instance, Runnable {
+            Bukkit.getPlayer(product.uuid)?.takeIf { it.isOnline }?.let(::processPendingPurchases)
+        })
+    }
+
+    private fun processPendingPurchases(player: Player) {
+        val products = try {
+            pendingPurchases.get(player.uniqueId)
+        } catch (e: Exception) {
+            Logger.currentLogger.error("Failed to load pending purchases for ${player.uniqueId}", e)
+            return
+        }
+        if (products.isEmpty()) return
+
+        val config = try {
+            PluginConfig.readCurrentConfig(SpigotPlugin.instance.dataFolder.toPath())
+        } catch (e: Exception) {
+            Logger.currentLogger.error("Failed to reload config.yml before granting purchases", e)
+            return
+        }
+
+        val processed = mutableListOf<IProduct>()
+        products.forEach { product ->
+            val purchaseCommand = when (product) {
+                is Product -> config.purchaseCommands.find { it.productId == product.id }
+                is SaraProduct -> config.purchaseCommands.find { it.saraProductPrice == product.amount }
+            }
+            if (purchaseCommand == null) {
+                Logger.currentLogger.warn("No purchase command is configured for pending purchase $product")
+                return@forEach
+            }
+
+            try {
+                purchaseCommand.command.forEach { command ->
+                    Bukkit.dispatchCommand(
+                        Bukkit.getConsoleSender(),
+                        command.replace("<player>", player.name)
+                            .replace("<uuid>", player.uniqueId.toString()),
+                    )
+                }
+                processed += product
+            } catch (e: Exception) {
+                Logger.currentLogger.error("Failed to grant pending purchase $product", e)
+            }
+        }
+
+        try {
+            pendingPurchases.remove(processed)
+        } catch (e: Exception) {
+            Logger.currentLogger.error("Failed to remove granted purchases for ${player.uniqueId}", e)
         }
     }
 

@@ -39,11 +39,18 @@ data class PluginConfig(
                 Logger.currentLogger.warn("Config file not found. Creating new one.")
                 configPath.writeText(comment + Yaml.default.encodeToString(serializer(), PluginConfig()) + "\n")
             }
-            instance = Yaml.default.decodeFromStream(serializer(), configPath.inputStream())
+            instance = readCurrentConfig(dataDirectory)
             configPath.writeText(comment + Yaml.default.encodeToString(serializer(), instance) + "\n")
 
             // initialize driver
             Driver()
+        }
+
+        fun readCurrentConfig(dataDirectory: Path): PluginConfig {
+            val configPath = dataDirectory.resolve("config.yml")
+            return configPath.inputStream().use { input ->
+                Yaml.default.decodeFromStream(serializer(), input)
+            }
         }
     }
 }
