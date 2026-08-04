@@ -11,6 +11,7 @@ import net.azisaba.api.server.interchat.JedisBoxProvider
 import net.azisaba.api.server.resources.punishments.RouteSearch
 import net.azisaba.api.server.schemas.SpicyAzisaBan
 import net.azisaba.api.server.store.StoreFulfillmentOutbox
+import net.azisaba.api.server.store.StoreRequestAuthenticator
 import net.azisaba.api.server.vector.RawTextVector
 import net.azisaba.interchat.api.data.PlayerPresenceData
 import net.azisaba.interchat.api.network.RedisKeys
@@ -27,6 +28,14 @@ object TaskScheduler : Timer("Async Task Scheduler", true) {
                 StoreFulfillmentOutbox.dispatchPending()
             } catch (e: Exception) {
                 Logger.currentLogger.error("Error dispatching store fulfillments", e)
+            }
+        }
+
+        schedule(1000L * 60 * 60, 1000L * 60 * 60) {
+            try {
+                StoreRequestAuthenticator.cleanupExpired()
+            } catch (e: Exception) {
+                Logger.currentLogger.warn("Could not clean expired store request ids", e)
             }
         }
 

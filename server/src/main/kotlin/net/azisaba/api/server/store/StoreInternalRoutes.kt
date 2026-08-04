@@ -1,9 +1,11 @@
 package net.azisaba.api.server.store
 
+import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.application.call
 import io.ktor.server.request.header
 import io.ktor.server.request.receiveText
+import io.ktor.server.response.respondText
 import io.ktor.server.routing.Route
 import io.ktor.server.routing.post
 import kotlinx.serialization.SerialName
@@ -21,7 +23,6 @@ import net.azisaba.api.server.schemas.SpicyAzisaBan
 import net.azisaba.api.server.storage.PersistentDataStore
 import net.azisaba.api.util.JSON
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.less
-import org.jetbrains.exposed.sql.and
 import org.jetbrains.exposed.sql.deleteWhere
 import org.jetbrains.exposed.sql.insertIgnore
 import org.jetbrains.exposed.sql.selectAll
@@ -147,7 +148,14 @@ fun Route.registerStoreInternalRoutes() {
         }
         val fulfillment = products.map { PreparedProduct(kind = "product", id = it["id"] as Long) }.toMutableList()
         if (sara != null) fulfillment += PreparedProduct(kind = "sara", amount = sara["price"] as Int)
-        call.respondJson(PreparedCheckout(uuid.toString(), lineItems, fulfillment))
+        call.respondText(
+            JSON.encodeToString(
+                PreparedCheckout.serializer(),
+                PreparedCheckout(uuid.toString(), lineItems, fulfillment),
+            ),
+            ContentType.Application.Json,
+            HttpStatusCode.OK,
+        )
     }
 
     post("/internal/store/fulfill") {
@@ -204,7 +212,7 @@ fun Route.registerStoreInternalRoutes() {
     }
 }
 
-private object StoreRequestAuthenticator {
+internal object StoreRequestAuthenticator {
     fun verify(request: io.ktor.server.request.ApplicationRequest, body: String, path: String): Boolean {
         val secret = System.getenv("STORE_WORKER_HMAC_SECRET")?.takeIf(String::isNotBlank) ?: return false
         val timestamp = request.header("X-Store-Timestamp")?.toLongOrNull() ?: return false
@@ -219,13 +227,19 @@ private object StoreRequestAuthenticator {
         val expected = mac.doFinal(canonical.toByteArray(StandardCharsets.UTF_8)).toHex()
         if (!MessageDigest.isEqual(expected.toByteArray(), signature.lowercase().toByteArray())) return false
         return transaction(DatabaseManager.azisabaApi) {
-            AzisabaAPI.StoreRequestsTable.deleteWhere {
-                AzisabaAPI.StoreRequestsTable.createdAt less (now - SIGNATURE_TOLERANCE_SECONDS)
-            }
             AzisabaAPI.StoreRequestsTable.insertIgnore {
                 it[AzisabaAPI.StoreRequestsTable.requestId] = requestId
                 it[createdAt] = now
             }.insertedCount == 1
+        }
+    }
+
+    fun cleanupExpired() {
+        val cutoff = System.currentTimeMillis() / 1000 - SIGNATURE_TOLERANCE_SECONDS
+        transaction(DatabaseManager.azisabaApi) {
+            AzisabaAPI.StoreRequestsTable.deleteWhere {
+                AzisabaAPI.StoreRequestsTable.createdAt less cutoff
+            }
         }
     }
 }

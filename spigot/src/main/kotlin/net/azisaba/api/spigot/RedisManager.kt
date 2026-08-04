@@ -106,7 +106,13 @@ object RedisManager : Listener {
 
     @EventHandler
     fun onPlayerJoin(event: PlayerJoinEvent) {
-        processPendingPurchases(event.player)
+        Bukkit.getScheduler().runTaskLater(
+            SpigotPlugin.instance,
+            Runnable {
+                event.player.takeIf { it.isOnline }?.let(::processPendingPurchases)
+            },
+            PLAYER_JOIN_PURCHASE_DELAY_TICKS,
+        )
     }
 
     private fun queuePurchase(product: IProduct) {
@@ -236,4 +242,6 @@ object RedisManager : Listener {
             jedis.mset(*(list + removeList).toTypedArray())
         }
     }
+
+    private const val PLAYER_JOIN_PURCHASE_DELAY_TICKS = 20L * 30
 }

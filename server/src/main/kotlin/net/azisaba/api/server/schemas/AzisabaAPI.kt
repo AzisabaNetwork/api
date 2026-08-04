@@ -87,6 +87,16 @@ object AzisabaAPI {
         override val primaryKey = PrimaryKey(orderId)
     }
 
+    object StoreAdminAuditTable : LongIdTable("store_admin_audit") {
+        val actorUserId = varchar("actor_user_id", 32)
+        val action = varchar("action", 16)
+        val productKind = varchar("product_kind", 16)
+        val productId = long("product_id")
+        val beforeJson = text("before_json").nullable()
+        val afterJson = text("after_json").nullable()
+        val createdAt = long("created_at")
+    }
+
     class SaraProduct(id: EntityID<Long>) : LongEntity(id) {
         companion object : LongEntityClass<SaraProduct>(SaraProductsTable)
 

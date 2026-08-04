@@ -15,6 +15,7 @@ import net.azisaba.api.server.players.PlayerService
 import net.azisaba.api.server.players.registerPlayerPunishmentRoutes
 import net.azisaba.api.server.players.registerPlayerRoutes
 import net.azisaba.api.server.store.registerStoreInternalRoutes
+import net.azisaba.api.server.store.registerStoreAdminRoutes
 
 fun Application.configureRouting() {
     val playerService = PlayerService(ExposedPlayerRepository())
@@ -34,6 +35,7 @@ fun Application.configureRouting() {
         get<net.azisaba.api.server.resources.Store.Products>() // /store/products
         get<net.azisaba.api.server.resources.Store.HighestSara>() // /store/players/{name}/highest_sara
         registerStoreInternalRoutes()
+        registerStoreAdminRoutes()
         get<net.azisaba.api.server.resources.interchat.RouteImage>()
 
         authenticate("api-key") {
