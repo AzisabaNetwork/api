@@ -28,7 +28,7 @@ data class CAAuctionInfo(
     @SerialName("ItemBytes")
     val itemBytes: String,
 ) {
-    fun toAuctionInfo(itemName: String, itemLore: String?): AuctionInfo {
+    fun toAuctionInfo(itemName: String, itemLore: String?, itemBytes: String = this.itemBytes): AuctionInfo {
         return AuctionInfo(
             price,
             seller,
