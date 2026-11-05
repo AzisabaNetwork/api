@@ -1,7 +1,3 @@
-plugins {
-    id("com.jetbrains.exposed.gradle.plugin") version "0.2.1"
-}
-
 repositories {
     maven { url = uri("https://repo.papermc.io/repository/maven-public/") }
 }
@@ -22,7 +18,9 @@ tasks {
         relocate("org.jetbrains.annotations", "$prefix.org.jetbrains.annotations")
         relocate("com.zaxxer", "$prefix.com.zaxxer")
         relocate("com.charleskorn", "$prefix.com.charleskorn")
-        relocate("org.snakeyaml", "$prefix.org.snakeyaml")
+        relocate("it.krzeminski.snakeyaml", "$prefix.it.krzeminski.snakeyaml")
+        relocate("okio", "$prefix.okio")
+        relocate("net.thauvin.erik", "$prefix.net.thauvin.erik")
         exclude("org/intellij/lang/annotations/**")
         exclude("org/slf4j/**")
     }

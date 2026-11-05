@@ -8,8 +8,8 @@ import io.ktor.http.contentType
 import io.ktor.resources.*
 import io.ktor.server.application.*
 import io.ktor.server.response.*
-import io.ktor.util.pipeline.*
-import io.ktor.util.toByteArray
+import io.ktor.server.routing.RoutingContext
+import io.ktor.utils.io.toByteArray
 import kotlinx.serialization.Serializable
 import net.azisaba.api.server.resources.RequestHandler
 
@@ -18,7 +18,7 @@ private val client = HttpClient(CIO)
 @Serializable
 @Resource("/interchat/image")
 class RouteImage : RequestHandler() {
-    override suspend fun PipelineContext<Unit, ApplicationCall>.handleRequest() {
+    override suspend fun RoutingContext.handleRequest() {
         val key = call.request.queryParameters["key"]
         val response = client.get("https://interchat-userdata.azisaba.net/$key.png")
         return call.respondBytes(response.bodyAsChannel().toByteArray(), response.contentType())

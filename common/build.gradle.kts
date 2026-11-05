@@ -1,18 +1,13 @@
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
-val kotlinVersion: String by project
-
-repositories {
-    mavenCentral()
-    maven { url = uri("https://maven.pkg.jetbrains.space/public/p/ktor/eap") }
-}
 
 dependencies {
-    api("org.mariadb.jdbc:mariadb-java-client:3.0.6")
-    api("com.zaxxer:HikariCP:5.0.1")
-    api("com.charleskorn.kaml:kaml:0.55.0") // YAML support for kotlinx.serialization
-    api("org.jetbrains.kotlinx:kotlinx-serialization-json:1.4.0")
-    testImplementation("org.jetbrains.kotlin:kotlin-test-junit:$kotlinVersion")
+    api("org.mariadb.jdbc:mariadb-java-client:3.5.11")
+    api("com.zaxxer:HikariCP:7.1.0")
+    // YAML support for kotlinx.serialization. 0.80.0+ targets Java 11, but spigot tests run on the Java 8 toolchain.
+    api("com.charleskorn.kaml:kaml:0.79.0")
+    api("org.jetbrains.kotlinx:kotlinx-serialization-json:1.12.0")
+    testImplementation(kotlin("test-junit"))
 }
 
 tasks {

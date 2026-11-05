@@ -1,6 +1,7 @@
 package net.azisaba.api.spigot
 
 import com.charleskorn.kaml.Yaml
+import com.charleskorn.kaml.decodeFromStream
 import kotlinx.serialization.Serializable
 import net.azisaba.api.data.IProduct
 import net.azisaba.api.data.StorePurchaseItemV2

@@ -2,7 +2,7 @@ package net.azisaba.api.server.resources.servers.life
 
 import io.ktor.resources.*
 import io.ktor.server.application.*
-import io.ktor.util.pipeline.*
+import io.ktor.server.routing.RoutingContext
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.encodeToJsonElement
 import net.azisaba.api.server.RedisManager
@@ -13,7 +13,7 @@ import net.azisaba.api.util.JSON
 @Serializable
 @Resource("/servers/life/auctions")
 class RouteAuctions : RequestHandler() {
-    override suspend fun PipelineContext<Unit, ApplicationCall>.handleRequest() {
+    override suspend fun RoutingContext.handleRequest() {
         val allAuctions = RedisManager.getAuctions()
         val includeExpired = call.parameters["includeExpired"]?.toBooleanStrictOrNull() ?: false
         if (includeExpired) {
@@ -26,7 +26,7 @@ class RouteAuctions : RequestHandler() {
     @Serializable
     @Resource("{id}")
     data class Id(val parent: RouteAuctions, val id: Long) : RequestHandler() {
-        override suspend fun PipelineContext<Unit, ApplicationCall>.handleRequest() {
+        override suspend fun RoutingContext.handleRequest() {
             call.respondJson(JSON.encodeToJsonElement(RedisManager.getAuction(id)))
         }
     }

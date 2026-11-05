@@ -6,9 +6,9 @@ import net.azisaba.api.server.schemas.LifeMpdb
 import net.azisaba.api.server.schemas.LifeStatz
 import net.azisaba.api.server.schemas.LuckPerms
 import net.azisaba.api.server.schemas.SpicyAzisaBan
-import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
-import org.jetbrains.exposed.sql.select
-import org.jetbrains.exposed.sql.transactions.transaction
+import org.jetbrains.exposed.v1.core.eq
+import org.jetbrains.exposed.v1.jdbc.selectAll
+import org.jetbrains.exposed.v1.jdbc.transactions.transaction
 import java.util.UUID
 
 data class PlayerGroupPermission(
@@ -105,7 +105,7 @@ class ExposedPlayerRepository : PlayerRepository {
     override fun isPlayerDataShared(uuid: UUID, data: SharedPlayerData): Boolean =
         transaction(DatabaseManager.azisabaApi) {
             AzisabaAPI.PlayerDataPrivacyTable
-                .select { AzisabaAPI.PlayerDataPrivacyTable.playerUUID eq uuid.toString() }
+                .selectAll().where { AzisabaAPI.PlayerDataPrivacyTable.playerUUID eq uuid.toString() }
                 .firstOrNull()
                 ?.let {
                     when (data) {

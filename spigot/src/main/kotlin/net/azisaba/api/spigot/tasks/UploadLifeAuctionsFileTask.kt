@@ -2,6 +2,7 @@ package net.azisaba.api.spigot.tasks
 
 import com.charleskorn.kaml.Yaml
 import com.charleskorn.kaml.YamlConfiguration
+import com.charleskorn.kaml.decodeFromStream
 import net.azisaba.api.Logger
 import net.azisaba.api.spigot.PluginConfig
 import net.azisaba.api.spigot.RedisManager

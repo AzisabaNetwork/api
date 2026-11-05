@@ -2,6 +2,7 @@ package net.azisaba.api.spigot
 
 import com.charleskorn.kaml.Yaml
 import com.charleskorn.kaml.YamlComment
+import com.charleskorn.kaml.decodeFromStream
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import net.azisaba.api.Logger

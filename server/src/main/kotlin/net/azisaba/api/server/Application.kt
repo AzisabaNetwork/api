@@ -4,7 +4,7 @@ import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.engine.*
 import io.ktor.server.netty.*
-import io.ktor.server.plugins.callloging.*
+import io.ktor.server.plugins.calllogging.*
 import io.ktor.server.plugins.cors.routing.*
 import io.ktor.server.resources.*
 import io.ktor.server.websocket.*
@@ -18,8 +18,8 @@ import net.azisaba.api.server.plugins.configureSerialization
 import net.azisaba.api.server.storage.PersistentDataStore
 import net.azisaba.interchat.api.InterChatProviderProvider
 import org.slf4j.LoggerFactory
-import java.time.Duration
 import kotlin.system.exitProcess
+import kotlin.time.Duration.Companion.seconds
 
 fun main() {
     ServerConfig // load configuration
@@ -52,8 +52,8 @@ fun Application.appModule() {
 
     TaskScheduler
     install(WebSockets) {
-        pingPeriod = Duration.ofSeconds(15)
-        timeout = Duration.ofSeconds(15)
+        pingPeriod = 15.seconds
+        timeout = 15.seconds
         maxFrameSize = Long.MAX_VALUE
         masking = false
     }

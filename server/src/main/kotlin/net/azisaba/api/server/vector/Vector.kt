@@ -1,6 +1,6 @@
 package net.azisaba.api.server.vector
 
-import com.github.jelmerk.knn.Item
+import com.github.jelmerk.hnswlib.core.Item
 import kotlinx.serialization.Serializable
 
 @Serializable

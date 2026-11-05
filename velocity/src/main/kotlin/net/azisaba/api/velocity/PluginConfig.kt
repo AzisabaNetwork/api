@@ -2,6 +2,7 @@ package net.azisaba.api.velocity
 
 import com.charleskorn.kaml.Yaml
 import com.charleskorn.kaml.YamlComment
+import com.charleskorn.kaml.decodeFromStream
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
 import kotlinx.serialization.SerialName

@@ -3,7 +3,7 @@ package net.azisaba.api.server.resources.punishments
 import io.ktor.http.*
 import io.ktor.resources.*
 import io.ktor.server.application.*
-import io.ktor.util.pipeline.*
+import io.ktor.server.routing.RoutingContext
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
@@ -13,7 +13,8 @@ import net.azisaba.api.server.resources.respondJson
 import net.azisaba.api.server.schemas.SpicyAzisaBan
 import net.azisaba.api.server.vector.MapVectorDatabase
 import net.azisaba.api.server.vector.VectorUtil
-import org.jetbrains.exposed.sql.transactions.transaction
+import org.jetbrains.exposed.v1.core.eq
+import org.jetbrains.exposed.v1.jdbc.transactions.transaction
 import java.io.File
 
 @Serializable
@@ -32,7 +33,7 @@ data class RouteSearch(
         }
     }
 
-    override suspend fun PipelineContext<Unit, ApplicationCall>.handleRequest() {
+    override suspend fun RoutingContext.handleRequest() {
         val query = call.request.queryParameters["q"] ?: run {
             call.respondJson(mapOf("error" to "q parameter must be specified"), status = HttpStatusCode.BadRequest)
             return

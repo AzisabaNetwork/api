@@ -1,10 +1,7 @@
-val kotlinVersion: String by project
-val exposedVersion: String by project
-
 plugins {
-    kotlin("jvm") version "2.0.0"
-    id("org.jetbrains.kotlin.plugin.serialization") version "2.0.0"
-    id("com.github.johnrengelman.shadow") version "8.1.1"
+    kotlin("jvm") version "2.4.21"
+    id("org.jetbrains.kotlin.plugin.serialization") version "2.4.21"
+    id("com.gradleup.shadow") version "9.6.1"
     `java-library`
 }
 
@@ -21,7 +18,7 @@ subprojects {
     apply {
         plugin("org.jetbrains.kotlin.jvm")
         plugin("org.jetbrains.kotlin.plugin.serialization")
-        plugin("com.github.johnrengelman.shadow")
+        plugin("com.gradleup.shadow")
         plugin("java-library")
     }
 
@@ -55,6 +52,9 @@ subprojects {
         }
 
         shadowJar {
+            // Shadow 9 defaults to EXCLUDE, which drops duplicates before transformers such as
+            // mergeServiceFiles() can process them. Keep the Shadow 8 behavior.
+            duplicatesStrategy = DuplicatesStrategy.INCLUDE
             archiveFileName.set("${parent!!.name}-${this@subprojects.name}-${project.version}.jar")
         }
     }
