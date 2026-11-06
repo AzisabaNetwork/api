@@ -11,8 +11,8 @@ import net.azisaba.api.server.resources.respondJson
 import net.azisaba.api.server.schemas.AzisabaAPI
 import net.azisaba.api.server.schemas.LuckPerms
 import net.azisaba.api.server.util.Util
-import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
-import org.jetbrains.exposed.sql.transactions.transaction
+import org.jetbrains.exposed.v1.core.eq
+import org.jetbrains.exposed.v1.jdbc.transactions.transaction
 import java.util.Timer
 import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap

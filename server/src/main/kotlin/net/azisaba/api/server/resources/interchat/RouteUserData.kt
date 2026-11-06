@@ -2,7 +2,7 @@ package net.azisaba.api.server.resources.interchat
 
 import io.ktor.resources.*
 import io.ktor.server.application.*
-import io.ktor.util.pipeline.*
+import io.ktor.server.routing.RoutingContext
 import kotlinx.serialization.Serializable
 import net.azisaba.api.server.interchat.UserDataProviderImpl
 import net.azisaba.api.server.resources.RequestHandler
@@ -15,7 +15,7 @@ private val empty: Map<String, Map<String, String>> = mapOf("prefix" to emptyMap
 @Serializable
 @Resource("/interchat/userdata")
 class RouteUserData : RequestHandler() {
-    override suspend fun PipelineContext<Unit, ApplicationCall>.handleRequest() {
+    override suspend fun RoutingContext.handleRequest() {
         val playerString = call.request.queryParameters["uuid"] ?: run {
             return call.respondJson(mapOf("error" to "uuid parameter must be specified"))
         }

@@ -15,7 +15,8 @@ import net.azisaba.api.server.store.StoreRequestAuthenticator
 import net.azisaba.api.server.vector.RawTextVector
 import net.azisaba.interchat.api.data.PlayerPresenceData
 import net.azisaba.interchat.api.network.RedisKeys
-import org.jetbrains.exposed.sql.transactions.transaction
+import org.jetbrains.exposed.v1.core.notInList
+import org.jetbrains.exposed.v1.jdbc.transactions.transaction
 import java.io.File
 import java.util.*
 import kotlin.concurrent.schedule

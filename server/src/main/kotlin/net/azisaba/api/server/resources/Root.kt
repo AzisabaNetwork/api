@@ -2,7 +2,7 @@ package net.azisaba.api.server.resources
 
 import io.ktor.resources.*
 import io.ktor.server.application.*
-import io.ktor.util.pipeline.*
+import io.ktor.server.routing.RoutingContext
 import kotlinx.serialization.Serializable
 import net.azisaba.api.server.PlayerInfo
 import net.azisaba.api.server.RedisManager
@@ -38,7 +38,7 @@ private const val showServers = false
 @Serializable
 @Resource("/counts")
 object RouteCounts : RequestHandler() {
-    override suspend fun PipelineContext<Unit, ApplicationCall>.handleRequest() {
+    override suspend fun RoutingContext.handleRequest() {
         val players = RedisManager.getPlayers()
         val nonNullPlayers = players.filter { it.childServer != null }
         val mappedGames = games.mapValues { (_, regexOrMap) ->

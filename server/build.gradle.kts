@@ -1,8 +1,7 @@
-val ktorVersion: String by project
-val kotlinVersion: String by project
-val logbackVersion: String by project
-val exposedVersion: String by project
-val adventureVersion = "4.11.0"
+val ktorVersion = providers.gradleProperty("ktorVersion").get()
+val logbackVersion = providers.gradleProperty("logbackVersion").get()
+val exposedVersion = providers.gradleProperty("exposedVersion").get()
+val adventureVersion = "4.26.1"
 
 plugins {
     application
@@ -13,10 +12,6 @@ application {
 
     val isDevelopment: Boolean = project.ext.has("development")
     applicationDefaultJvmArgs = listOf("-Dio.ktor.development=$isDevelopment")
-}
-
-repositories {
-    maven { url = uri("https://maven.pkg.jetbrains.space/public/p/ktor/eap") }
 }
 
 dependencies {
@@ -32,20 +27,19 @@ dependencies {
     implementation("io.ktor:ktor-server-netty-jvm:$ktorVersion")
     implementation("io.ktor:ktor-server-call-logging:$ktorVersion")
     implementation("io.ktor:ktor-server-cors:$ktorVersion")
-    implementation("io.ktor:ktor-server-websockets:$ktorVersion")
-    implementation("io.ktor:ktor-server-websockets-jvm:2.3.5")
-    implementation("io.ktor:ktor-client-cio-jvm:2.3.5")
+    implementation("io.ktor:ktor-server-websockets-jvm:$ktorVersion")
+    implementation("io.ktor:ktor-client-cio-jvm:$ktorVersion")
     implementation("ch.qos.logback:logback-classic:$logbackVersion")
-    implementation("redis.clients:jedis:4.2.3")
+    implementation("redis.clients:jedis:8.0.2")
     implementation("net.azisaba.interchat:api:2.12.0")
     implementation("net.kyori:adventure-api:$adventureVersion")
     implementation("net.kyori:adventure-text-serializer-legacy:$adventureVersion")
     implementation("net.kyori:adventure-text-serializer-gson:$adventureVersion")
     implementation("net.kyori:adventure-text-serializer-plain:$adventureVersion")
-    implementation("org.cloudburstmc:nbt:3.0.3.Final")
-    implementation("net.luckperms:api:5.4")
-    implementation("cloud.unum:usearch:2.8.6")
-    implementation("com.github.jelmerk:hnswlib-core:1.1.0")
-    testImplementation("io.ktor:ktor-server-tests-jvm:$ktorVersion")
-    testImplementation("org.jetbrains.kotlin:kotlin-test-junit:$kotlinVersion")
+    implementation("org.cloudburstmc:nbt:3.1.0.Final")
+    implementation("net.luckperms:api:5.5")
+    implementation("cloud.unum:usearch:2.8.12")
+    implementation("com.github.jelmerk:hnswlib-core:1.2.1")
+    testImplementation("io.ktor:ktor-server-test-host-jvm:$ktorVersion")
+    testImplementation(kotlin("test-junit"))
 }

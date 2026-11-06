@@ -11,14 +11,13 @@ import net.azisaba.api.server.ServerConfig
 import net.azisaba.api.server.schemas.AzisabaAPI
 import net.azisaba.api.server.util.Util
 import net.azisaba.api.util.JSON
-import org.jetbrains.exposed.sql.ResultRow
-import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
-import org.jetbrains.exposed.sql.SqlExpressionBuilder.plus
-import org.jetbrains.exposed.sql.insertIgnore
-import org.jetbrains.exposed.sql.select
-import org.jetbrains.exposed.sql.selectAll
-import org.jetbrains.exposed.sql.transactions.transaction
-import org.jetbrains.exposed.sql.update
+import org.jetbrains.exposed.v1.core.ResultRow
+import org.jetbrains.exposed.v1.core.eq
+import org.jetbrains.exposed.v1.core.plus
+import org.jetbrains.exposed.v1.jdbc.insertIgnore
+import org.jetbrains.exposed.v1.jdbc.selectAll
+import org.jetbrains.exposed.v1.jdbc.transactions.transaction
+import org.jetbrains.exposed.v1.jdbc.update
 import java.security.MessageDigest
 import java.util.UUID
 
@@ -29,7 +28,7 @@ object StoreFulfillmentOutbox {
         val hash = MessageDigest.getInstance("SHA-256").digest(payload.toByteArray()).toHex()
         return transaction(DatabaseManager.azisabaApi) {
             val existing = AzisabaAPI.StoreFulfillmentsTable
-                .select { AzisabaAPI.StoreFulfillmentsTable.orderId eq fulfillment.orderId }
+                .selectAll().where { AzisabaAPI.StoreFulfillmentsTable.orderId eq fulfillment.orderId }
                 .singleOrNull()
             if (existing != null) {
                 return@transaction if (existing[AzisabaAPI.StoreFulfillmentsTable.payloadHash] == hash) {

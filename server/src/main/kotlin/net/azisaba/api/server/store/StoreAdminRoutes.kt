@@ -17,8 +17,8 @@ import net.azisaba.api.server.DatabaseManager
 import net.azisaba.api.server.resources.respondJson
 import net.azisaba.api.server.schemas.AzisabaAPI
 import net.azisaba.api.util.JSON
-import org.jetbrains.exposed.sql.insert
-import org.jetbrains.exposed.sql.transactions.transaction
+import org.jetbrains.exposed.v1.jdbc.insert
+import org.jetbrains.exposed.v1.jdbc.transactions.transaction
 
 private const val PRODUCT_KIND = "product"
 private const val SARA_KIND = "sara"

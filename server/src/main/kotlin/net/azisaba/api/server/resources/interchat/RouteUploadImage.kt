@@ -11,7 +11,7 @@ import io.ktor.resources.*
 import io.ktor.server.application.*
 import io.ktor.server.auth.authentication
 import io.ktor.server.request.receiveChannel
-import io.ktor.util.pipeline.*
+import io.ktor.server.routing.RoutingContext
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonObject
 import net.azisaba.api.server.ServerConfig
@@ -27,7 +27,7 @@ private val limiter = mutableMapOf<UUID, Long>() // <player, expire>
 @Serializable
 @Resource("/interchat/upload_image")
 class RouteUploadImage : RequestHandler() {
-    override suspend fun PipelineContext<Unit, ApplicationCall>.handleRequest() {
+    override suspend fun RoutingContext.handleRequest() {
         val uuid = call.authentication.principal<APIKeyPrincipal>()?.player ?: return run {
             call.respondJson(mapOf("error" to "not found"), status = HttpStatusCode.NotFound)
         }

@@ -5,5 +5,6 @@ RUN ./gradlew shadowJar --no-daemon
 
 FROM eclipse-temurin:17-jre AS runner
 WORKDIR /app
-COPY --from=builder /app/server/build/libs/api-ktor-server-0.0.1.jar .
-ENTRYPOINT [ "java", "-jar", "api-ktor-server-0.0.1.jar"]
+# Copy without the version in the name so a version bump does not break the image build.
+COPY --from=builder /app/server/build/libs/api-ktor-server-*.jar ./api-ktor-server.jar
+ENTRYPOINT [ "java", "-jar", "api-ktor-server.jar"]

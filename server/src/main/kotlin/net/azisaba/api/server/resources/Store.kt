@@ -3,13 +3,13 @@ package net.azisaba.api.server.resources
 import io.ktor.resources.Resource
 import io.ktor.server.application.ApplicationCall
 import io.ktor.server.application.call
-import io.ktor.util.pipeline.PipelineContext
+import io.ktor.server.routing.RoutingContext
 import kotlinx.serialization.Serializable
 import net.azisaba.api.server.DatabaseManager
 import net.azisaba.api.server.schemas.AzisabaAPI
 import net.azisaba.api.server.schemas.LuckPerms
 import net.azisaba.api.server.schemas.SpicyAzisaBan
-import org.jetbrains.exposed.sql.transactions.transaction
+import org.jetbrains.exposed.v1.jdbc.transactions.transaction
 import java.util.UUID
 
 @Serializable
@@ -73,7 +73,7 @@ class Store {
         @Suppress("unused")
         val parent: Store,
     ): RequestHandler() {
-        override suspend fun PipelineContext<Unit, ApplicationCall>.handleRequest() {
+        override suspend fun RoutingContext.handleRequest() {
             val (products, saraProducts) = getAllProducts()
             call.respondJson(
                 mapOf(
@@ -91,7 +91,7 @@ class Store {
         val parent: Store,
         val name: String,
     ): RequestHandler() {
-        override suspend fun PipelineContext<Unit, ApplicationCall>.handleRequest() {
+        override suspend fun RoutingContext.handleRequest() {
             call.respondJson(mapOf("highest_sara" to getHighestSara(name), "gaming_sara" to hasGamingSara(name)))
         }
     }

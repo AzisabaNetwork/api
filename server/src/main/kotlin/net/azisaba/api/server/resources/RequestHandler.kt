@@ -4,17 +4,17 @@ import io.ktor.http.*
 import io.ktor.http.content.*
 import io.ktor.server.application.*
 import io.ktor.server.response.*
-import io.ktor.util.pipeline.*
+import io.ktor.server.routing.RoutingContext
 import kotlinx.serialization.SerializationException
 import kotlinx.serialization.encodeToString
 import net.azisaba.api.server.util.JsonUtil.getJson
 import net.azisaba.api.server.util.toJsonElement
 
 abstract class RequestHandler {
-    abstract suspend fun PipelineContext<Unit, ApplicationCall>.handleRequest()
+    abstract suspend fun RoutingContext.handleRequest()
 }
 
-suspend fun PipelineContext<Unit, ApplicationCall>.handle(handler: RequestHandler) {
+suspend fun RoutingContext.handle(handler: RequestHandler) {
     with(handler) {
         handleRequest()
     }
