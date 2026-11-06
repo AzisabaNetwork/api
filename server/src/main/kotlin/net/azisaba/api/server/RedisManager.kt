@@ -3,6 +3,7 @@ package net.azisaba.api.server
 import kotlinx.serialization.Serializable
 import net.azisaba.api.data.AuctionInfo
 import net.azisaba.api.data.MythicSpawnerData
+import net.azisaba.api.data.ServerItemData
 import net.azisaba.api.serializers.UUIDSerializer
 import net.azisaba.api.server.storage.PersistentDataStore
 import net.azisaba.api.server.util.Util
@@ -33,6 +34,12 @@ object RedisManager {
 
     val getSpawnerData: (server: String, childServer: String?) -> List<MythicSpawnerDataEx> =
         Util.memoize2(1000) { server, childServer -> fetchSpawnerData(server, childServer) }
+
+    val getItemData: (server: String, childServer: String?) -> List<ServerItemDataEx> =
+        Util.memoize2(1000) { server, childServer -> fetchItemData(server, childServer) }
+
+    val getItem: (server: String, childServer: String?, name: String) -> ServerItemDataEx? =
+        Util.memoize3(1000) { server, childServer, name -> fetchItem(server, childServer, name) }
 
     /**
      * Returns a list of all players. This method fetches the list from Redis and is not cached.
@@ -137,6 +144,64 @@ object RedisManager {
             }
         }
     }
+
+    private fun fetchItemData(server: String, childServer: String?): List<ServerItemDataEx> {
+        val key = "azisaba-api:$server:item:${childServer ?: "*"}:*"
+        return pool.resource.use { jedis ->
+            val keys = jedis.keys(key)
+            if (keys.isEmpty()) {
+                return emptyList()
+            }
+            jedis.mget(*keys.toTypedArray()).mapNotNull { data ->
+                try {
+                    if (data == null) {
+                        null
+                    } else {
+                        val split = data.split('\u0000')
+                        val expiresAt = split[0].toLong()
+                        if (expiresAt < System.currentTimeMillis()) {
+                            null
+                        } else {
+                            val actualChildServer = split[1]
+                            val json = split.drop(2).joinToString("\u0000")
+                            val itemData = JSON.decodeFromString(ServerItemData.serializer(), json)
+                            ServerItemDataEx(itemData, server, actualChildServer)
+                        }
+                    }
+                } catch (e: Exception) {
+                    log.error("Failed to deserialize ServerItemData", e)
+                    null
+                }
+            }
+        }
+    }
+
+    private fun fetchItem(server: String, childServer: String?, name: String): ServerItemDataEx? {
+        val key = "azisaba-api:$server:item:${childServer ?: "*"}:$name"
+        return pool.resource.use { jedis ->
+            val keys = jedis.keys(key)
+            if (keys.isEmpty()) {
+                return null
+            }
+            val firstKey = keys.first()
+            val data = jedis.get(firstKey) ?: return null
+            try {
+                val split = data.split('\u0000')
+                val expiresAt = split[0].toLong()
+                if (expiresAt < System.currentTimeMillis()) {
+                    null
+                } else {
+                    val actualChildServer = split[1]
+                    val json = split.drop(2).joinToString("\u0000")
+                    val itemData = JSON.decodeFromString(ServerItemData.serializer(), json)
+                    ServerItemDataEx(itemData, server, actualChildServer)
+                }
+            } catch (e: Exception) {
+                log.error("Failed to deserialize ServerItemData", e)
+                null
+            }
+        }
+    }
 }
 
 @Serializable
@@ -153,6 +218,13 @@ data class PlayerInfo(
 @Serializable
 data class MythicSpawnerDataEx(
     val data: MythicSpawnerData,
+    val server: String,
+    val childServer: String?,
+)
+
+@Serializable
+data class ServerItemDataEx(
+    val data: ServerItemData,
     val server: String,
     val childServer: String?,
 )

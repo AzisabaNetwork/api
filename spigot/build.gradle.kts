@@ -9,6 +9,7 @@ dependencies {
     api(project(":spigot-common"))
     api(project(":spigot-mythic4_12"))
     api(project(":spigot-mythic5_12"))
+    api(project(":spigot-folia"))
     implementation("redis.clients:jedis:8.0.2")
     // JUnit 6 requires Java 17, but this module tests on the Java 8 toolchain.
     testImplementation(platform("org.junit:junit-bom:5.14.4"))

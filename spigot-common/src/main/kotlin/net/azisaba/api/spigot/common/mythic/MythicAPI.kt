@@ -11,12 +11,18 @@ interface MythicAPI {
             return plugin.description.version
         }
 
-        fun getImplVersion(version: String = getMythicMobsVersion()): String =
-            when {
-                version.startsWith("4.12.") -> "v4_12"
-                version.startsWith("5.12.") -> "v5_12"
+        fun getImplVersion(version: String = getMythicMobsVersion()): String {
+            val (major, minor) =
+                Regex("""^(\d+)\.(\d+)""").find(version)?.destructured?.let { (major, minor) ->
+                    major.toInt() to minor.toInt()
+                } ?: throw UnsupportedOperationException("Unsupported version: $version")
+            return when {
+                major == 4 && minor == 12 -> "v4_12"
+                // The 5.12 implementation only uses APIs that are unchanged in later 5.x releases.
+                major == 5 && minor >= 12 -> "v5_12"
                 else -> throw UnsupportedOperationException("Unsupported version: $version")
             }
+        }
 
         var unavailableCause: Throwable? = null
             private set
@@ -31,4 +37,10 @@ interface MythicAPI {
     }
 
     fun getSpawner(name: String): MythicSpawner?
+
+    fun getItemNames(): List<String>
+
+    fun getItem(name: String): MythicItem?
+
+    fun getAllItems(): List<MythicItem> = getItemNames().mapNotNull { getItem(it) }
 }

@@ -43,6 +43,24 @@ object Util {
         }
     }
 
+    inline fun <T, U, V, R> memoize3(expireAfter: Long = 0, crossinline fn: (T, U, V) -> R): (T, U, V) -> R {
+        val cache = mutableMapOf<Triple<T, U, V>, Pair<R, Long>>()
+
+        return { t, u, v ->
+            val triple = Triple(t, u, v)
+            val now = System.currentTimeMillis()
+            val (value, lastUsed) = cache[triple] ?: Pair(fn(t, u, v), now)
+            if (lastUsed == now || (expireAfter > 0 && now - lastUsed > expireAfter)) {
+                if (lastUsed != now) {
+                    cache[triple] = Pair(fn(t, u, v), now)
+                } else {
+                    cache[triple] = Pair(value, lastUsed)
+                }
+            }
+            value
+        }
+    }
+
     fun <R> memoizeSupplier(expireAfter: Long = 0, fn: () -> R): () -> R {
         val updating = AtomicBoolean(false)
         var cache: Pair<R, Long>? = null

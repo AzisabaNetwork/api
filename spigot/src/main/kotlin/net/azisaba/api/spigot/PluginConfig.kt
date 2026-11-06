@@ -66,6 +66,9 @@ data class FilePaths(
 data class MythicMobs(
     @YamlComment("If true, these settings will be uploaded to the Redis server.")
     val enabled: Boolean = false,
+    @YamlComment("If true, MythicMobs items will also be uploaded to the Redis server.")
+    val uploadItems: Boolean = true,
+    val itemServers: List<String> = listOf("life"),
     val lifeServers: Map<String, List<String>> = mapOf(
         "anyServerName" to listOf("spawnerName"),
     ),

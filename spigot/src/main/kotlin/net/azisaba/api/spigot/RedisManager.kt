@@ -55,25 +55,14 @@ object RedisManager : Listener {
                         override fun onMessage(channel: String, message: String) {
                             if (channel == "azisaba-api:store:purchase") {
                                 val data = JSON.decodeFromString(PurchaseData.serializer(), message)
-                                val player = Bukkit.getOfflinePlayer(data.uuid)
-                                Bukkit.broadcastMessage("§a§l${player.name}さんが§d§l${data.amount}円§a§l寄付しました！")
-                                Bukkit.broadcastMessage("§a§l${player.name}さんありがとうございます！")
-                                val text =
-                                    TextComponent("§6§l${player.name}さんのように寄付するにはこのメッセージをクリック！")
-                                text.clickEvent = ClickEvent(ClickEvent.Action.OPEN_URL, "https://newstore.azisaba.net")
-                                Bukkit.spigot().broadcast(text)
+                                announcePurchase(Bukkit.getOfflinePlayer(data.uuid).name, data.amount)
                             } else if (channel == "azisaba-api:store:purchase-item") {
                                 val data = JSON.decodeFromString<IProduct>(message)
                                 queuePurchase(data)
                             } else if (channel == "azisaba-api:store:purchase:v2") {
                                 val data = JSON.decodeFromString<PurchaseAnnouncementV2>(message)
                                 if (!pendingPurchases.recordOnce(data.deliveryId)) return
-                                val player = Bukkit.getOfflinePlayer(data.uuid)
-                                Bukkit.broadcastMessage("§a§l${player.name}さんが§d§l${data.amount}円§a§l寄付しました！")
-                                Bukkit.broadcastMessage("§a§l${player.name}さんありがとうございます！")
-                                val text = TextComponent("§6§l${player.name}さんのように寄付するにはこのメッセージをクリック！")
-                                text.clickEvent = ClickEvent(ClickEvent.Action.OPEN_URL, "https://newstore.azisaba.net")
-                                Bukkit.spigot().broadcast(text)
+                                announcePurchase(Bukkit.getOfflinePlayer(data.uuid).name, data.amount)
                             } else if (channel == "azisaba-api:store:purchase-item:v2") {
                                 queuePurchase(JSON.decodeFromString<StorePurchaseItemV2>(message))
                             }
@@ -106,13 +95,20 @@ object RedisManager : Listener {
 
     @EventHandler
     fun onPlayerJoin(event: PlayerJoinEvent) {
-        Bukkit.getScheduler().runTaskLater(
-            SpigotPlugin.instance,
-            Runnable {
-                event.player.takeIf { it.isOnline }?.let(::processPendingPurchases)
-            },
-            PLAYER_JOIN_PURCHASE_DELAY_TICKS,
-        )
+        // Purchase commands are dispatched as the console, which must happen on the global region thread on Folia.
+        SpigotPlugin.instance.scheduler.runGlobalLater(PLAYER_JOIN_PURCHASE_DELAY_TICKS, Runnable {
+            event.player.takeIf { it.isOnline }?.let(::processPendingPurchases)
+        })
+    }
+
+    private fun announcePurchase(playerName: String?, amount: Long) {
+        SpigotPlugin.instance.scheduler.runGlobal(Runnable {
+            Bukkit.broadcastMessage("§a§l${playerName}さんが§d§l${amount}円§a§l寄付しました！")
+            Bukkit.broadcastMessage("§a§l${playerName}さんありがとうございます！")
+            val text = TextComponent("§6§l${playerName}さんのように寄付するにはこのメッセージをクリック！")
+            text.clickEvent = ClickEvent(ClickEvent.Action.OPEN_URL, "https://newstore.azisaba.net")
+            Bukkit.spigot().broadcast(text)
+        })
     }
 
     private fun queuePurchase(product: IProduct) {
@@ -123,7 +119,7 @@ object RedisManager : Listener {
             return
         }
 
-        Bukkit.getScheduler().runTask(SpigotPlugin.instance, Runnable {
+        SpigotPlugin.instance.scheduler.runGlobal(Runnable {
             Bukkit.getPlayer(product.uuid)?.takeIf { it.isOnline }?.let(::processPendingPurchases)
         })
     }
@@ -138,7 +134,7 @@ object RedisManager : Listener {
             )
             return
         }
-        Bukkit.getScheduler().runTask(SpigotPlugin.instance, Runnable {
+        SpigotPlugin.instance.scheduler.runGlobal(Runnable {
             Bukkit.getPlayer(delivery.product.uuid)?.takeIf { it.isOnline }?.let(::processPendingPurchases)
         })
     }

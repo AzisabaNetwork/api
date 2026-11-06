@@ -50,6 +50,11 @@ fun Application.configureRouting() {
             post<net.azisaba.api.server.resources.interchat.RouteUploadImage>()
         }
 
+        authenticate("life-items") {
+            get<net.azisaba.api.server.resources.servers.life.RouteItems>()
+            get<net.azisaba.api.server.resources.servers.life.RouteItems.Name>()
+        }
+
         authenticate("punishments") {
             registerPlayerPunishmentRoutes(playerService)
             get<net.azisaba.api.server.resources.punishments.RouteId>() // /punishments/{id}

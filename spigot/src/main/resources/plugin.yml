@@ -2,6 +2,7 @@ name: AzisabaAPI
 version: @version@
 main: net.azisaba.api.spigot.SpigotPlugin
 api-version: 1.15
+folia-supported: true
 softdepend:
   - MythicMobs
 commands:

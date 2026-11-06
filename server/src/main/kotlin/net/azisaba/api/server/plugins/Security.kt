@@ -38,6 +38,16 @@ fun Application.configureSecurity() {
             group("switchdevelopermember")
             group("developermember")
         })
+        register(GroupAuthenticationProvider.create("life-items") {
+            group("switchalladmin")
+            group("alladmin")
+            group("switchalladminmember")
+            group("alladminmember")
+            group("switchdeveloper")
+            group("developer")
+            group("switchdevelopermember")
+            group("developermember")
+        })
     }
 }
 

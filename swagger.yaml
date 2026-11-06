@@ -100,6 +100,69 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/Guild"
+  /servers/life/items:
+    get:
+      summary: Returns a map of child server names to array of items. Requires developer group.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: child_server
+          in: query
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: A map of child servers to item lists
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties:
+                  type: array
+                  items:
+                    $ref: "#/components/schemas/ServerItemData"
+        '403':
+          description: Missing required permissions
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /servers/life/items/{name}:
+    get:
+      summary: Returns item details by item name. Requires developer group.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: name
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: child_server
+          in: query
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Item data
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ServerItemData"
+        '403':
+          description: Missing required permissions
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        '404':
+          description: Item not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
 components:
   securitySchemes:
     bearerAuth:
@@ -214,3 +277,41 @@ components:
           type: boolean
         open:
           type: boolean
+    ServerItemData:
+      type: object
+      required: [name, material]
+      properties:
+        name:
+          type: string
+          example: EXCALIBUR
+        material:
+          type: string
+          example: minecraft:diamond_sword
+        display_name:
+          type: string
+          example: "§6Excalibur"
+        lore:
+          type: array
+          items:
+            type: string
+        custom_model_data:
+          type: integer
+          example: 1001
+        amount:
+          type: integer
+          example: 1
+        unbreakable:
+          type: boolean
+          example: true
+        hide_flags:
+          type: array
+          items:
+            type: string
+        enchants:
+          type: object
+          additionalProperties:
+            type: integer
+        custom_nbt:
+          type: object
+          additionalProperties:
+            type: string

@@ -39,15 +39,15 @@ class PrivacyCommand(private val plugin: SpigotPlugin) : CommandExecutor, Listen
         }
 
         player.sendMessage("§7プライバシー設定を読み込んでいます…")
-        Bukkit.getScheduler().runTaskAsynchronously(plugin, Runnable {
+        plugin.scheduler.runAsync(Runnable {
             try {
                 val settings = DatabaseManager.getPrivacySettings(player.uniqueId)
-                Bukkit.getScheduler().runTask(plugin, Runnable {
+                plugin.scheduler.runForEntity(player, Runnable {
                     if (player.isOnline) openInventory(player, settings)
                 })
             } catch (e: Exception) {
                 plugin.logger.log(java.util.logging.Level.SEVERE, "Could not load API privacy settings for ${player.uniqueId}", e)
-                Bukkit.getScheduler().runTask(plugin, Runnable {
+                plugin.scheduler.runForEntity(player, Runnable {
                     if (player.isOnline) player.sendMessage("§c設定の読み込みに失敗しました。時間をおいて再度お試しください。")
                 })
             }
@@ -96,14 +96,14 @@ class PrivacyCommand(private val plugin: SpigotPlugin) : CommandExecutor, Listen
             return
         }
 
-        Bukkit.getScheduler().runTaskAsynchronously(plugin, Runnable {
+        plugin.scheduler.runAsync(Runnable {
             try {
                 if (inventory) {
                     DatabaseManager.setShareInventory(player.uniqueId, updated.shareInventory)
                 } else {
                     DatabaseManager.setShareEnderChest(player.uniqueId, updated.shareEnderChest)
                 }
-                Bukkit.getScheduler().runTask(plugin, Runnable {
+                plugin.scheduler.runForEntity(player, Runnable {
                     holder.settings = updated
                     if (player.isOnline && player.openInventory.topInventory.holder === holder) {
                         render(holder.backingInventory, updated)
@@ -112,7 +112,7 @@ class PrivacyCommand(private val plugin: SpigotPlugin) : CommandExecutor, Listen
                 })
             } catch (e: Exception) {
                 plugin.logger.log(java.util.logging.Level.SEVERE, "Could not save API privacy settings for ${player.uniqueId}", e)
-                Bukkit.getScheduler().runTask(plugin, Runnable {
+                plugin.scheduler.runForEntity(player, Runnable {
                     if (player.isOnline) player.sendMessage("§c設定を保存できませんでした。変更は反映されていません。")
                 })
             } finally {

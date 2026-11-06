@@ -10,7 +10,7 @@ repositories {
 }
 
 group = "net.azisaba.api"
-version = "0.0.2"
+version = "0.0.3"
 
 java.toolchain.languageVersion.set(JavaLanguageVersion.of(17))
 
@@ -52,9 +52,13 @@ subprojects {
         }
 
         shadowJar {
-            // Shadow 9 defaults to EXCLUDE, which drops duplicates before transformers such as
-            // mergeServiceFiles() can process them. Keep the Shadow 8 behavior.
-            duplicatesStrategy = DuplicatesStrategy.INCLUDE
+            // Drop duplicate entries (e.g. every library's META-INF/LICENSE.txt): Paper's plugin
+            // remapper refuses jars containing duplicate entries. Service files must stay INCLUDE
+            // so mergeServiceFiles() can see and merge every copy.
+            duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+            filesMatching("META-INF/services/**") {
+                duplicatesStrategy = DuplicatesStrategy.INCLUDE
+            }
             archiveFileName.set("${parent!!.name}-${this@subprojects.name}-${project.version}.jar")
         }
     }
